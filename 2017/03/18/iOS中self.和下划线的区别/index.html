@@ -87,12 +87,16 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="李超的技术博客">
-<meta property="og:url" content="http://yoursite.com/archives/2017/index.html">
+<meta name="description" content="self.xxx 通过访问的方法的引用:包含了set和get方法。而通过_.xxx方法是获取自己的实例变量，不包含set和get方法。  self.xxx是对属性的访问；而_xxx是对局部变量的访问。所有被声明为属性的成员，再ios5之前需要使用编译指令@synthesize 来告诉编译器帮助生成属性的getter和setter方法，之后这个指令可以不用认为的指定了，默认情况下编译器会帮助我们">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS中self.和下划线的区别">
+<meta property="og:url" content="http://yoursite.com/2017/03/18/iOS中self.和下划线的区别/index.html">
 <meta property="og:site_name" content="李超的技术博客">
+<meta property="og:description" content="self.xxx 通过访问的方法的引用:包含了set和get方法。而通过_.xxx方法是获取自己的实例变量，不包含set和get方法。  self.xxx是对属性的访问；而_xxx是对局部变量的访问。所有被声明为属性的成员，再ios5之前需要使用编译指令@synthesize 来告诉编译器帮助生成属性的getter和setter方法，之后这个指令可以不用认为的指定了，默认情况下编译器会帮助我们">
+<meta property="og:updated_time" content="2017-03-22T01:00:39.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="李超的技术博客">
+<meta name="twitter:title" content="iOS中self.和下划线的区别">
+<meta name="twitter:description" content="self.xxx 通过访问的方法的引用:包含了set和get方法。而通过_.xxx方法是获取自己的实例变量，不包含set和get方法。  self.xxx是对属性的访问；而_xxx是对局部变量的访问。所有被声明为属性的成员，再ios5之前需要使用编译指令@synthesize 来告诉编译器帮助生成属性的getter和setter方法，之后这个指令可以不用认为的指定了，默认情况下编译器会帮助我们">
 
 
 
@@ -120,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/archives/2017/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/03/18/iOS中self.和下划线的区别/"/>
 
 
 
 
 
-  <title> 归档 | 李超的技术博客 </title>
+  <title> iOS中self.和下划线的区别 | 李超的技术博客 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -151,7 +155,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left  page-archive  ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -245,66 +249,161 @@
           <div id="content" class="content">
             
 
-  <section id="posts" class="posts-collapse">
-    <span class="archive-move-on"></span>
+  <div id="posts" class="posts-expand">
+    
 
-    <span class="archive-page-counter">
-      
-      
-      
-        
-      
-      嗯..! 目前共计 1 篇日志。 继续努力。
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/18/iOS中self.和下划线的区别/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bill">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李超的技术博客">
     </span>
 
     
+      <header class="post-header">
 
-      
-      
-      
-
-      
         
-        <div class="collection-title">
-          <h2 class="archive-year motion-element" id="archive-year-2017">2017</h2>
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                iOS中self.和下划线的区别
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-18T17:56:00+08:00">
+                2017-03-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
         </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
       
       
 
       
+        <p>  self.xxx 通过访问的方法的引用:包含了set和get方法。而通过_.xxx方法是获取自己的实例变量，不包含set和get方法。<br>  self.xxx是对属性的访问；而_xxx是对局部变量的访问。所有被声明为属性的成员，再ios5之前需要使用编译指令@synthesize 来告诉编译器帮助生成属性的getter和setter方法，之后这个指令可以不用认为的指定了，默认情况下编译器会帮助我们生成。编译器在生成getter，setter方法时是有优先级的，他首先查找当前的类中用户是否定义属性的getter，setter方法，如果有，则编译器会跳过，不会再生成，使用用户定义的方法。也就是说你在使用self.xxx时是调用一个getter方法。会使引用计数加一，而<em>xxx不会使用引用技术加一的。<br>  所有使用self.xxx是更好的选择，因为这样可以兼容懒加载，同时也避免了使用下滑线的时候忽略了self这个指针，后者容易在block中造成循环引用。同时，使用 </em>是获取不到父类的属性，因为它只是对局部变量的访问。<br>  <strong>最后总结：self方法实际上是用了get和set方法间接调用，下划线方法是直接对变量操作。</strong></p>
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+      
+    </div>
 
-      <h1 class="post-title">
+    <div>
+      
         
-            <a class="post-title-link" href="/2017/03/18/iOS中self.和下划线的区别/" itemprop="url">
-              
-                <span itemprop="name">iOS中self.和下划线的区别</span>
-              
-            </a>
+
+      
+    </div>
+
+    <div>
+      
         
-      </h1>
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-03-18T17:56:00+08:00"
-              content="2017-03-18" >
-          03-18
-        </time>
-      </div>
+      
+    </div>
 
-    </header>
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+
+      
+      
+    </footer>
   </article>
 
 
 
-    
-
-  </section>
-
-  
-
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
           
           </div>
@@ -312,6 +411,10 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -506,11 +609,9 @@
   
 
   
-  
-    <script type="text/javascript" id="motion.page.archive">
-      $('.archive-year').velocity('transition.slideLeftIn');
-    </script>
-  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
 
 
   
