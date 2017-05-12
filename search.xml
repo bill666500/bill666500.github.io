@@ -5,7 +5,7 @@
     <entry>
       <title><![CDATA[AutoRelease深入理解原理]]></title>
       <url>%2F2017%2F05%2F13%2FAutoRelease%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%8E%9F%E7%90%86%2F</url>
-      <content type="text"></content>
+      <content type="text"><![CDATA[Autorelease机制是iOS开发者管理对象内存的好伙伴，MRC中，调用[obj autorelease]来延迟内存的释放是一件简单自然的事，ARC下，我们甚至可以完全不知道Autorelease就能管理好内存。而在这背后，objc和编译器都帮我们做了哪些事呢，它们是如何协作来正确管理内存的呢？ Autorelease对象什么时候释放？ 在没有手加Autorelease Pool的情况下，Autorelease对象是在当前的runloop迭代结束时释放的，而它能够释放的原因是系统在每个runloop迭代中都加入了自动释放池Push和Pop]]></content>
     </entry>
 
     
