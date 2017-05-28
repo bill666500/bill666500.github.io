@@ -90,8 +90,9 @@
 <meta name="description" content="Python爬虫利器之使用BeautifulSoup抓取所需内容(一)
 最近由于兴趣使然，对于Python爬虫产生了兴趣，所以平时生活中会抽出功夫学习爬虫，文章是自己的爬虫基础实例，以后博客不仅会有iOS的内容，也会Python爬虫，记录自己的代码生涯。
 以糗事百科为例来说明，http://www.qiushibaike.com/text/，抓取原创笑话段子。
+
 .png)
-发现内容都在span标签">
+发现内容都在span标">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Python爬虫利器之使用BeautifulSoup抓取所需内容(一)">
 <meta property="og:url" content="http://yoursite.com/2017/05/28/Python爬虫利器之使用BeautifulSoup抓取所需内容(一)/index.html">
@@ -99,18 +100,20 @@
 <meta property="og:description" content="Python爬虫利器之使用BeautifulSoup抓取所需内容(一)
 最近由于兴趣使然，对于Python爬虫产生了兴趣，所以平时生活中会抽出功夫学习爬虫，文章是自己的爬虫基础实例，以后博客不仅会有iOS的内容，也会Python爬虫，记录自己的代码生涯。
 以糗事百科为例来说明，http://www.qiushibaike.com/text/，抓取原创笑话段子。
+
 .png)
-发现内容都在span标签">
-<meta property="og:image" content="http://yoursite.com/Users/lichao/Desktop/blog/source/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\">
-<meta property="og:updated_time" content="2017-05-28T09:26:55.000Z">
+发现内容都在span标">
+<meta property="og:image" content="http://yoursite.com/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\">
+<meta property="og:updated_time" content="2017-05-28T09:51:00.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Python爬虫利器之使用BeautifulSoup抓取所需内容(一)">
 <meta name="twitter:description" content="Python爬虫利器之使用BeautifulSoup抓取所需内容(一)
 最近由于兴趣使然，对于Python爬虫产生了兴趣，所以平时生活中会抽出功夫学习爬虫，文章是自己的爬虫基础实例，以后博客不仅会有iOS的内容，也会Python爬虫，记录自己的代码生涯。
 以糗事百科为例来说明，http://www.qiushibaike.com/text/，抓取原创笑话段子。
+
 .png)
-发现内容都在span标签">
-<meta name="twitter:image" content="http://yoursite.com/Users/lichao/Desktop/blog/source/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\">
+发现内容都在span标">
+<meta name="twitter:image" content="http://yoursite.com/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\">
 
 
 
@@ -375,7 +378,8 @@
         <p><strong>Python爬虫利器之使用BeautifulSoup抓取所需内容(一)</strong></p>
 <p>最近由于兴趣使然，对于Python爬虫产生了兴趣，所以平时生活中会抽出功夫学习爬虫，文章是自己的爬虫基础实例，以后博客不仅会有iOS的内容，也会Python爬虫，记录自己的代码生涯。</p>
 <p>以糗事百科为例来说明，<a href="http://www.qiushibaike.com/text/" target="_blank">http://www.qiushibaike.com/text/</a>，抓取原创笑话段子。</p>
-<p><img src="/Users/lichao/Desktop/blog/source/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\" alt="image">.png)</p>
+<!--![image](/Users/lichao/Desktop/blog/source/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\).png)-->
+<p><img src="/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\" alt="image">.png)</p>
 <p>发现内容都在span标签中，如果写 find_all(“span”) 可以抓取到段子的内容，但是还包含了网页上其他span的内容。这时我们往上一级标签上看，&lt;div class=”content&gt; 就是只包含了段子内容的标签。取出来的link的内容就是div，取它的span中的内容就是我们需要段子的内容。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">import requests</div><div class="line"></div><div class="line">from bs4 import BeautifulSoup</div><div class="line"></div><div class="line">html = requests.get(&apos;http://www.qiushibaike.com/text/&apos;).content</div><div class="line"></div><div class="line">soup = BeautifulSoup(html,&apos;lxml&apos;)</div><div class="line">links = soup.find_all(&apos;div&apos;,class_=&apos;content&apos;)</div><div class="line"></div><div class="line">for link in links:</div><div class="line">	print(link.span.get_text())</div></pre></td></tr></table></figure>
 
