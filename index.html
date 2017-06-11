@@ -257,6 +257,164 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/11/信号量dispatch-semaphore的理解及实际运用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bill">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李超的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/06/11/信号量dispatch-semaphore的理解及实际运用/" itemprop="url">
+                  信号量dispatch_semaphore的理解及实际运用
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-11T18:46:06+08:00">
+                2017-06-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>  信号量：就是一种可用来控制访问资源的数量的标识，设定了一个信号量，在线程访问之前，加上信号量的处理，则可告知系统按照我们指定的信号量数量来执行多个线程。</p>
+<p>  其实，这有点类似锁机制了，只不过信号量都是系统帮助我们处理了，我们只需要在执行线程之前，设定一个信号量值，并且在使用时，加上信号量处理方法就行了。</p>
+<p>  信号量为0则阻塞线程，大于0则不会阻塞。因此我们可以通过改变信号量的值，来控制是否阻塞线程，从而达到线程同步。</p>
+<p>在GCD中有三个函数是semaphore的操作，分别是：<br>dispatch_semaphore_create　　　创建一个semaphore<br>dispatch_semaphore_signal　　　发送一个信号<br>dispatch_semaphore_wait　　　　等待信号<br>　　<br>  简单的介绍一下这三个函数，第一个函数有一个整形的参数，我们可以理解为信号的总量，dispatch_semaphore_signal是发送一个信号，自然会让信号总量加1，dispatch_semaphore_wait等待信号，当信号总量少于0的时候就会一直等待，否则就可以正常的执行，并让信号总量-1，根据这样的原理，我们便可以快速的创建一个并发控制来同步任务和有限资源访问控制。<br>　　<br>实际开发中，我们通常会遇到如下问题：</p>
+<h3>一、某界面存在多个请求，希望所有请求均结束才进行某操作。</h3><br>对于这一问题的解决方案很容易想到通过线程组进行实现，代码如下：<br><br>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">dispatch_group_t group = dispatch_group_create();</div><div class="line">dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^&#123;</div><div class="line">    //请求1</div><div class="line">    [self request_A];</div><div class="line">&#125;);</div><div class="line">dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^&#123;</div><div class="line">    //请求2</div><div class="line">    [self request_B];</div><div class="line">&#125;);</div><div class="line">dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^&#123;</div><div class="line">    //请求3</div><div class="line">     [self request_C];</div><div class="line">&#125;);</div><div class="line">dispatch_group_notify(group, dispatch_get_main_queue(), ^&#123;</div><div class="line">    //界面刷新</div><div class="line">    NSLog(@&quot;任务均完成，刷新界面&quot;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure><br><br>  这里我们书写一个网络请求通用方法，假设同时请求某新闻列表的3页数据，每页均为一个独立的网络请求。使用我们最常用的AFNet请求，方法如下（真实开发中可能为banner数据请求、主体网络请求、广告网络请求等）：<br><br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">- (void)request_A &#123;</div><div class="line"> AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];;</div><div class="line"> manager.responseSerializer = [AFHTTPResponseSerializer serializer];</div><div class="line"> NSDictionary *parameter = @&#123;@&quot;token&quot;:@&quot;63104AB32427EBF89B957BBD1A5C5C11&quot;,</div><div class="line">                              @&quot;page&quot;:@&quot;1&quot;,</div><div class="line">                              @&quot;upTime&quot;:@&quot;desc&quot;&#125;;</div><div class="line">	</div><div class="line"> [manager POST:URL parameters:parameter progress:^(NSProgress * _Nonnull uploadProgress) &#123;</div><div class="line">	</div><div class="line"> &#125; success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) &#123;</div><div class="line">	</div><div class="line">     NSDictionary * dict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingMutableContainers error:nil];</div><div class="line">     for (NSDictionary *rowsDict in dict[@&quot;rows&quot;]) &#123;</div><div class="line">         NSLog(@&quot;A___%@&quot;,rowsDict[@&quot;title&quot;]);</div><div class="line">     &#125;</div><div class="line"> &#125; failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) &#123;</div><div class="line">	</div><div class="line"> &#125;];</div><div class="line">&#125;</div></pre></td></tr></table></figure><br><br>  request_B、request_C分别为请求第二页与第三页数据，这里不重复书写。为了显示更加明显，在请求中打印了对应新闻的标题内容。<br><br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">  任务均完成，刷新界面</div><div class="line">C___搞笑，不是认真的</div><div class="line">C___摄影 | 街拍</div><div class="line">C___生活小窍门</div><div class="line">C___传统中国</div><div class="line">C___想吃的美食系列</div><div class="line">B___时间的见证者</div><div class="line">B___没事 来吐槽吧……</div><div class="line">B___触动心灵的摄影</div><div class="line">B___摄影 | 黑白印记</div><div class="line">B___每日插画推荐</div><div class="line">A___左爱情，右面包</div><div class="line">A___潮我看</div><div class="line">A___世界各国的人们怎么过情人节</div><div class="line">A___一点创意点亮生活</div><div class="line">A___摄影 | 随手拍</div></pre></td></tr></table></figure><br><br><br>   运行后马上接收到了线程组完成的提示，之后数据才依次请求下来，很明显三个单纯的AFNet请求已经不能满足我们的需求了。线程组完成时并没有在我们希望的时候给予通知。在真实开发中会造成的问题为多个请求均加载完成，但界面已在未得到数据前提前刷新导致界面空白。<br><br>   因此对于这种问题需要另辟蹊径，这里我们就要借助GCD中的信号量dispatch_semaphore进行实现，即营造线程同步情况。<br>dispatch_semaphore信号量为基于计数器的一种多线程同步机制。用于解决在多个线程访问共有资源时候，会因为多线程的特性而引发数据出错的问题。<br><br>  如果semaphore计数大于等于1，计数-1，返回，程序继续运行。如果计数为0，则等待。<br><br>   dispatch_semaphore_signal(semaphore)为计数+1操作。dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER)为设置等待时间，这里设置的等待时间是一直等待。<br><br>我们将网络请求通用方法进行修改如下：<br><br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">- (void)request_A &#123;</div><div class="line">  //创建信号量并设置计数默认为0</div><div class="line">  dispatch_semaphore_t sema = dispatch_semaphore_create(0);</div><div class="line"></div><div class="line">  AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];;</div><div class="line">  manager.responseSerializer = [AFHTTPResponseSerializer serializer];</div><div class="line">  NSDictionary *parameter = @&#123;@&quot;token&quot;:@&quot;63104AB32427EBF89B957BBD1A5C5C11&quot;,</div><div class="line">                               @&quot;page&quot;:@&quot;1&quot;,</div><div class="line">                               @&quot;upTime&quot;:@&quot;desc&quot;&#125;;</div><div class="line"></div><div class="line">  [manager POST:URL parameters:parameter progress:^(NSProgress * _Nonnull uploadProgress) &#123;</div><div class="line"></div><div class="line">  &#125; success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) &#123;</div><div class="line">      //计数+1操作</div><div class="line">      dispatch_semaphore_signal(sema);</div><div class="line">      NSDictionary * dict = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingMutableContainers error:nil];</div><div class="line">      for (NSDictionary *rowsDict in dict[@&quot;rows&quot;]) &#123;</div><div class="line">          NSLog(@&quot;A___%@&quot;,rowsDict[@&quot;title&quot;]);</div><div class="line">      &#125;</div><div class="line">  &#125; failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) &#123;</div><div class="line">      ////计数+1操作</div><div class="line">      dispatch_semaphore_signal(sema);</div><div class="line">  &#125;];</div><div class="line">  //若计数为0则一直等待</div><div class="line">  dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);</div><div class="line">&#125;</div></pre></td></tr></table></figure><br><br>   为方便阅读，伪代码如下：<br><br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">  dispatch_semaphore_t sema = dispatch_semaphore_create(0);</div><div class="line">[网络请求:&#123;</div><div class="line">    成功：dispatch_semaphore_signal(sema);</div><div class="line">    失败：dispatch_semaphore_signal(sema);</div><div class="line">&#125;];</div><div class="line">dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);</div></pre></td></tr></table></figure><br><br>   这时我们再运行程序，打印如下：<br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">C___聆听的耳朵</div><div class="line">C___家居 | 你的家里还缺点什么？</div><div class="line">C___logo设计</div><div class="line">C___时装</div><div class="line">C___搞笑，不是认真的</div><div class="line">A___左爱情，右面包</div><div class="line">A___潮我看</div><div class="line">A___世界各国的人们怎么过情人节</div><div class="line">A___一点创意点亮生活</div><div class="line">A___摄影 | 随手拍</div><div class="line">B___时间的见证者</div><div class="line">B___没事 来吐槽吧……</div><div class="line">B___触动心灵的摄影</div><div class="line">B___摄影 | 黑白印记</div><div class="line">B___每日插画推荐</div><div class="line">任务均完成，刷新界面</div></pre></td></tr></table></figure><br><br>   运行打印可见，通过信号量dispatch_semaphore完美的解决了此问题，并且网络请求仍为异步，不会堵塞当前主线程。<br><br>   <h3>二、某界面存在多个请求，希望请求依次执行。</h3>
+
+<p>   对于这个问题通常会通过线程依赖进行解决，因使用GCD设置线程依赖比较繁琐，这里通过NSOperationQueue进行实现，这里采用比较经典的例子，三个任务分别为下载图片，打水印和上传图片，三个任务需异步执行但需要顺序性。代码如下，下载图片、打水印、上传图片仍模拟为分别请求新闻列表3页数据。</p>
+   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">//1.任务一：下载图片</div><div class="line"> NSBlockOperation *operation1 = [NSBlockOperation blockOperationWithBlock:^&#123;</div><div class="line">     [self request_A];</div><div class="line"> &#125;];</div><div class="line"></div><div class="line"> //2.任务二：打水印</div><div class="line"> NSBlockOperation *operation2 = [NSBlockOperation blockOperationWithBlock:^&#123;</div><div class="line">     [self request_B];</div><div class="line"> &#125;];</div><div class="line"></div><div class="line"> //3.任务三：上传图片</div><div class="line"> NSBlockOperation *operation3 = [NSBlockOperation blockOperationWithBlock:^&#123;</div><div class="line">     [self request_C];</div><div class="line"> &#125;];</div><div class="line"></div><div class="line"> //4.设置依赖</div><div class="line"> [operation2 addDependency:operation1];      //任务二依赖任务一</div><div class="line"> [operation3 addDependency:operation2];      //任务三依赖任务二</div><div class="line"></div><div class="line"> //5.创建队列并加入任务</div><div class="line"> NSOperationQueue *queue = [[NSOperationQueue alloc] init];</div><div class="line"> [queue addOperations:@[operation3, operation2, operation1] waitUntilFinished:NO];</div></pre></td></tr></table></figure>
+<p>   首先我们使用未添加信号量dispatch_semaphore时运行，打印如下:</p>
+   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">   B___时间的见证者</div><div class="line">B___没事 来吐槽吧……</div><div class="line">B___触动心灵的摄影</div><div class="line">B___摄影 | 黑白印记</div><div class="line">B___每日插画推荐</div><div class="line">A___潮我看</div><div class="line">A___左爱情，右面包</div><div class="line">A___世界各国的人们怎么过情人节</div><div class="line">A___一点创意点亮生活</div><div class="line">A___摄影 | 随手拍</div><div class="line">C___盘</div><div class="line">C___聆听的耳朵</div><div class="line">C___家居 | 你的家里还缺点什么？</div><div class="line">C___logo设计</div><div class="line">C___时装</div></pre></td></tr></table></figure>
+<p>   根据打印结果可见，若不对请求方法做处理，其运行结果并不是我们想要的，联系实际需求，A、B、C请求分别对应下载图片、打水印、上传图片，而此时运行顺序则为B-&gt;A-&gt;C，在未获得图片时即执行打水印操作明显是错误的。重复运行亦会出现不同结果，即请求不做处理，其结果不可控无法预测。线程依赖设置并未起到作用。</p>
+<p>解决此问题的方法仍可通过信号量dispatch_semaphore进行解决。我们将请求方法替换为添加dispatch_semaphore限制的形式。即</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">  dispatch_semaphore_t sema = dispatch_semaphore_create(0);</div><div class="line">[网络请求:&#123;</div><div class="line">        成功：dispatch_semaphore_signal(sema);</div><div class="line">        失败：dispatch_semaphore_signal(sema);</div><div class="line">&#125;]</div><div class="line">dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);</div></pre></td></tr></table></figure>
+<p>  再次重复运行，我们会发现每次运行结果均一致，A、B、C三任务异步顺序执行（A-&gt;B-&gt;C）</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">   A___潮我看</div><div class="line">A___左爱情，右面包</div><div class="line">A___世界各国的人们怎么过情人节</div><div class="line">A___一点创意点亮生活</div><div class="line">A___摄影 | 随手拍</div><div class="line">B___时间的见证者</div><div class="line">B___没事 来吐槽吧……</div><div class="line">B___触动心灵的摄影</div><div class="line">B___摄影 | 黑白印记</div><div class="line">B___每日插画推荐</div><div class="line">C___盘</div><div class="line">C___聆听的耳朵</div><div class="line">C___家居 | 你的家里还缺点什么？</div><div class="line">C___logo设计</div><div class="line">C___时装</div></pre></td></tr></table></figure>
+<p>   通过重复运行打印结果可证实确实实现了我们想要的效果。这样即解决了所提出的问题二。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/07/自己动手构造编译系统：编译、汇编与链接笔记2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1331,7 +1489,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
