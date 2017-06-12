@@ -87,16 +87,38 @@
 
 
 
-<meta name="description" content="Autorelease机制是iOS开发者管理对象内存的好伙伴，MRC中，调用[obj autorelease]来延迟内存的释放是一件简单自然的事，ARC下，我们甚至可以完全不知道Autorelease就能管理好内存。而在这背后，objc和编译器都帮我们做了哪些事呢，它们是如何协作来正确管理内存的呢？  Autorelease对象什么时候释放？  在没有手加Autorelease Pool的情况">
+<meta name="description" content="2.1  编译程序的设计
+
+   编译器是编译系统的核心，主要负责解析源程序的语义，生成目标机器代码。一般情况下，编译流程包含词法分析、语法分析、语义分析和代码生成四个阶段。符号表管理和错误处理贯穿于整个编译流程。如果编译器支持代码优化，那么还需要优化器模块。
+   
+  2.1.1　词法分析
+
+  现在假定我们拥有一段使用C语言书写的源程序，词法分析器通过对源文件的扫描获得高级语言定义的词">
 <meta property="og:type" content="article">
-<meta property="og:title" content="AutoRelease深入理解原理">
-<meta property="og:url" content="http://yoursite.com/2017/05/13/AutoRelease深入理解原理/index.html">
+<meta property="og:title" content="自己动手构造编译系统：编译、汇编与链接笔记3">
+<meta property="og:url" content="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/index.html">
 <meta property="og:site_name" content="李超的技术博客">
-<meta property="og:description" content="Autorelease机制是iOS开发者管理对象内存的好伙伴，MRC中，调用[obj autorelease]来延迟内存的释放是一件简单自然的事，ARC下，我们甚至可以完全不知道Autorelease就能管理好内存。而在这背后，objc和编译器都帮我们做了哪些事呢，它们是如何协作来正确管理内存的呢？  Autorelease对象什么时候释放？  在没有手加Autorelease Pool的情况">
-<meta property="og:updated_time" content="2017-05-12T20:26:26.000Z">
+<meta property="og:description" content="2.1  编译程序的设计
+
+   编译器是编译系统的核心，主要负责解析源程序的语义，生成目标机器代码。一般情况下，编译流程包含词法分析、语法分析、语义分析和代码生成四个阶段。符号表管理和错误处理贯穿于整个编译流程。如果编译器支持代码优化，那么还需要优化器模块。
+   
+  2.1.1　词法分析
+
+  现在假定我们拥有一段使用C语言书写的源程序，词法分析器通过对源文件的扫描获得高级语言定义的词">
+<meta property="og:image" content="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/1.png">
+<meta property="og:image" content="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/2.png">
+<meta property="og:image" content="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/3.png">
+<meta property="og:updated_time" content="2017-06-12T14:38:49.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="AutoRelease深入理解原理">
-<meta name="twitter:description" content="Autorelease机制是iOS开发者管理对象内存的好伙伴，MRC中，调用[obj autorelease]来延迟内存的释放是一件简单自然的事，ARC下，我们甚至可以完全不知道Autorelease就能管理好内存。而在这背后，objc和编译器都帮我们做了哪些事呢，它们是如何协作来正确管理内存的呢？  Autorelease对象什么时候释放？  在没有手加Autorelease Pool的情况">
+<meta name="twitter:title" content="自己动手构造编译系统：编译、汇编与链接笔记3">
+<meta name="twitter:description" content="2.1  编译程序的设计
+
+   编译器是编译系统的核心，主要负责解析源程序的语义，生成目标机器代码。一般情况下，编译流程包含词法分析、语法分析、语义分析和代码生成四个阶段。符号表管理和错误处理贯穿于整个编译流程。如果编译器支持代码优化，那么还需要优化器模块。
+   
+  2.1.1　词法分析
+
+  现在假定我们拥有一段使用C语言书写的源程序，词法分析器通过对源文件的扫描获得高级语言定义的词">
+<meta name="twitter:image" content="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/1.png">
 
 
 
@@ -124,13 +146,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/05/13/AutoRelease深入理解原理/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/"/>
 
 
 
 
 
-  <title> AutoRelease深入理解原理 | 李超的技术博客 </title>
+  <title> 自己动手构造编译系统：编译、汇编与链接笔记3 | 李超的技术博客 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -259,7 +281,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/13/AutoRelease深入理解原理/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Bill">
@@ -280,7 +302,7 @@
             
             
               
-                AutoRelease深入理解原理
+                自己动手构造编译系统：编译、汇编与链接笔记3
               
             
           </h1>
@@ -295,8 +317,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-13T04:25:46+08:00">
-                2017-05-13
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-12T21:31:53+08:00">
+                2017-06-12
               </time>
             
 
@@ -318,8 +340,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS基础</span>
+                  <a href="/categories/计算机原理/" itemprop="url" rel="index">
+                    <span itemprop="name">计算机原理</span>
                   </a>
                 </span>
 
@@ -358,7 +380,31 @@
       
 
       
-        <p>  Autorelease机制是iOS开发者管理对象内存的好伙伴，MRC中，调用[obj autorelease]来延迟内存的释放是一件简单自然的事，ARC下，我们甚至可以完全不知道Autorelease就能管理好内存。而在这背后，objc和编译器都帮我们做了哪些事呢，它们是如何协作来正确管理内存的呢？<br>  <strong>Autorelease对象什么时候释放？</strong><br>  <strong>在没有手加Autorelease Pool的情况下，Autorelease对象是在当前的runloop迭代结束时释放的，而它能够释放的原因是系统在每个runloop迭代中都加入了自动释放池Push和Pop。</strong><br>  从程序启动到加载完成是一个完整的运行循环，然后会停下来，等待用户交互，用户的每一次交互都会启动一次运行循环，来处理用户所有的点击事件、触摸事件。我们都是知道：所有autorelease的对象，在出了作用域之后，会被自动添加到最近创建的自动释放池中。但是如果每次都放进应用程序的main.m中的autoreleasepool中，迟早有被撑满的一刻。这个过程中必定有一个释放的动作。何时？在一次完整的运行循环结束之前，会被销毁。<br>  那什么时间会创建自动释放池？运行循环检测到事件并启动后，就会创建自动释放池。<br>  子线程的 runloop 默认是不工作，无法主动创建，必须手动创建。<br>  自定义的 NSOperation 和 NSThread 需要手动创建自动释放池。比如： 自定义的 NSOperation 类中的 main 方法里就必须添加自动释放池。否则出了作用域后，自动释放对象会因为没有自动释放池去处理它，而造成内存泄露。<br>  但对于 blockOperation 和 invocationOperation 这种默认的Operation ，系统已经帮我们封装好了，不需要手动创建自动释放池。<br>  @autoreleasepool 当自动释放池被销毁或者耗尽时，会向自动释放池中的所有对象发送 release 消息，释放自动释放池中的所有对象。<br>  如果在一个vc的viewDidLoad中创建一个 Autorelease对象，那么该对象会在 viewDidAppear 方法执行前就被销毁了。<br>  子线程的 runloop 默认是不工作，无法主动创建，必须手动创建。自定义的 NSOperation 和 NSThread 需要手动创建自动释放池。比如： 自定义的 NSOperation 类中的 main 方法里就必须添加自动释放池。否则出了作用域后，自动释放对象会因为没有自动释放池去处理它，而造成内存泄露。但对于 blockOperation 和 invocationOperation 这种默认的Operation ，系统已经帮我们封装好了，不需要手动创建自动释放池。如果在一个vc的viewDidLoad中创建一个 Autorelease对象，那么该对象会在 viewDidAppear 方法执行前就被销毁了。</p>
+           <h3>2.1  编译程序的设计</h3>
+
+<p>   编译器是编译系统的核心，主要负责解析源程序的语义，生成目标机器代码。一般情况下，编译流程包含词法分析、语法分析、语义分析和代码生成四个阶段。符号表管理和错误处理贯穿于整个编译流程。如果编译器支持代码优化，那么还需要优化器模块。</p>
+<p>   <img src="/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/1.png" alt="image"></p>
+  <h3>2.1.1　词法分析</h3>
+
+<p>  现在假定我们拥有一段使用C语言书写的源程序，词法分析器通过对源文件的扫描获得高级语言定义的词法记号。所谓词法记号（也称为终结符），反映在高级语言语法中就是对应的标识符、关键字、常量，以及运算符、逗号、分号等界符。</p>
+<p>  对词法分析器的要求是能正常识别出这些不同形式的词法记号。词法分析器的输入是源代码文本文件内一长串的文本内容，那么如何从文本串中分析出每个词法记号呢？为了解决这个问题，需要引入有限自动机的概念。</p>
+<p>  有限自动机能解析并识别词法记号，比如识别标识符的有限自动机、识别常量的有限自动机等。有限自动机从开始状态启动，读入一个字符作为输入，并根据该字符选择进入下一个状态。继续读入新的字符，直到遇到结束状态为止，读入的所有字符序列便是有限自动机识别的词法记号。</p>
+<p>  使用有限自动机，可以识别出自定义语言包含的所有词法记号。把这些词法记号记录下来，作为下一步语法分析的输入。如果使用一遍编译方式，就不用记录这些词法记号，而是直接将识别的词法记号送入语法分析器进行处理。</p>
+ <h3>2.1.2　语法分析</h3>
+
+<p>  词法分析器的输入是文本字符串，语法分析器的输入则是词法分析器识别的词法记号序列。语法分析器的输出不再是一串线性符号序列，而是一种树形的数据结构，通常称之为抽象语法树。</p>
+<p>  <img src="/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/2.png" alt="image"></p>
+<p>  继续前面赋值语句的例子，我们可以先看看它可能对应的抽象语法树:</p>
+<p>   <img src="/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/3.png" alt="image"></p>
+<p>   所有的词法记号都出现在树的叶子节点上，我们称这样的叶子节点为终结符。而所有的非叶子节点，都是对一串词法记号的抽象概括，我们称之为非终结符，可以将非终结符看作一个单独的语法模块（抽象语法子树）。其实，整个源程序是一棵完整的抽象语法树，它由一系列语法模块按照树结构组织起来。语法分析器就是要获得源程序的抽象语法树表示，这样才能让编译器具体识别每个语法模块的含义，分析出程序的整体含义。</p>
+<p>   在介绍语法分析器的工作之前，需要先获得高级语言语法的形式化表示，即文法。文法定义了源程序代码的书写规则，同时也是语法分析器构造抽象语法树的规则。如果要定义赋值语句的文法，一般可以表达成如下产生式的形式：</p>
+   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;赋值语句&gt;=&gt;标识符等号&lt;表达式&gt;分号</div></pre></td></tr></table></figure>
+<p>   被“&lt;&gt;”括起来的内容表示非终结符，终结符直接书写即可，上式可以读作“赋值语句推导出标识符、等号、表达式和分号”。显然，表达式也有相关的文法定义。根据定义好的高级语言特性，可以设计出相应的高级语言的文法，使用文法可以准确地表达高级语言的语法规则。</p>
+<p>   有了高级语言的文法表示，就可以构造语法分析器来生成抽象语法树。在编译原理教材中，描述了很多的文法分析算法，有自顶向下的LL（1）分析，也有自底向上的算符优先分析、LR分析等。其中最常使用的是LL（1）和LR分析。相比而言，LR分析器能力更强，但是分析器设计比较复杂，不适合手工构造。我们设计的高级语言文法，只要稍加约束便能使LL（1）分析器正常工作，因此本书采用LL（1）分析器来完成语法分析的工作。递归下降子程序作为LL（1）算法的一种便捷的实现方式，非常适合手工实现语法分析器。</p>
+<p>   递归下降子程序的基本原则是：将产生式左侧的非终结符转化为函数定义，将产生式右侧的非终结符转化为函数调用，将终结符转化为词法记号匹配。例如前面提到的赋值语句对应的子程序的伪代码大致是这样的。</p>
+   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">void 赋值语句()&#123;   </div><div class="line">match(标识符);    </div><div class="line">match(等号);</div><div class="line">表达式();</div><div class="line">match(分号);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>   每次对子程序的调用，就是按照前序的方式对该抽象语法子树的一次构造。例如在构造赋值语句子树时，会先构造“赋值语句”根节点，然后依次匹配标识符、等号子节点。当遇到下一个非终结符时，会进入对应的“表达式”子程序内继续按照前序方式构造子树的子树。最后匹配当前子程序的最后一个子节点，完成“赋值语句”子树的构造。整个语法分析就是按照这样的方式构造“程序”树的一个过程，一旦在终结符匹配过程中出现读入的词法记号与预期的词法记号不吻合的情况，便会产生语法错误。</p>
+<p>   在实际语法分析器实现中，并不一定要显式地构造出抽象语法树。递归下降子程序实现的语法分析器，使得抽象语法树的语法模块都蕴含在每次子程序的执行中，即每次子程序的正确执行都表示识别了对应的语法模块。因此，可以在语法分析子程序中直接进行后续的工作，如语义分析及代码生成。</p>
 
       
     </div>
@@ -395,8 +441,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/05/13/instancetype和id区别/" rel="next" title="instancetype和id区别">
-                <i class="fa fa-chevron-left"></i> instancetype和id区别
+              <a href="/2017/06/12/使用NSProxy和NSObject设计代理类的差异/" rel="next" title="使用NSProxy和NSObject设计代理类的差异">
+                <i class="fa fa-chevron-left"></i> 使用NSProxy和NSObject设计代理类的差异
               </a>
             
           </div>
@@ -404,10 +450,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/05/28/Python爬虫利器之使用BeautifulSoup抓取所需内容(一)/" rel="prev" title="Python爬虫利器之使用BeautifulSoup抓取所需内容(一)">
-                Python爬虫利器之使用BeautifulSoup抓取所需内容(一) <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -454,8 +496,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/images/avatar/avatar/avatar.jpg"
@@ -508,6 +559,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">2.1  编译程序的设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">2.1.1　词法分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">2.1.2　语法分析</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
