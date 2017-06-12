@@ -257,6 +257,168 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/12/使用NSProxy和NSObject设计代理类的差异/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bill">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李超的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/06/12/使用NSProxy和NSObject设计代理类的差异/" itemprop="url">
+                  使用NSProxy和NSObject设计代理类的差异
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-12T10:47:06+08:00">
+                2017-06-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>经常发现在一些需要使用消息转发而创建代理类时, 不同的程序员都有着不同的使用方法, 有些采用继承于NSObject, 而有一些采用继承自NSProxy。 二者都是Foundation框架中的基类, 并且都实现了<nsobject>这个接口, 从命名和文档中看NSProxy天生就是用来干这个事情的。 但即便如此, 它们却都定义了相同的消息转发的接口, 那我们在使用二者来完成这个工作时有什么差异呢。</nsobject></p>
+<p>先贴一下通过二者来创建代理类的最基本实现代码。<br>继承自NSProxy</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">@interface THProxyA : NSProxy</div><div class="line">@property (nonatomic, strong) id target;</div><div class="line">@end</div><div class="line">@implementation THProxyA</div><div class="line">- (id)initWithObject:(id)object &#123;</div><div class="line">    self.target = object;</div><div class="line">    return self;</div><div class="line">&#125;</div><div class="line">- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector &#123;</div><div class="line">    return [self.target methodSignatureForSelector:selector];</div><div class="line">&#125;</div><div class="line">- (void)forwardInvocation:(NSInvocation *)invocation &#123;</div><div class="line">    [invocation invokeWithTarget:self.target];</div><div class="line">&#125;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>继承自NSObject</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">@interface THProxyB : NSObject</div><div class="line">@property (nonatomic, strong) id target;</div><div class="line">@end</div><div class="line">@implementation THProxyB</div><div class="line">- (id)initWithObject:(id)object &#123;</div><div class="line">    self = [super init];</div><div class="line">    if (self) &#123;</div><div class="line">        self.target = object;</div><div class="line">    &#125;</div><div class="line">    return self;</div><div class="line">&#125;</div><div class="line">- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector &#123;</div><div class="line">    return [self.target methodSignatureForSelector:selector];</div><div class="line">&#125;</div><div class="line">- (void)forwardInvocation:(NSInvocation *)invocation &#123;</div><div class="line">    [invocation invokeWithTarget:self.target];</div><div class="line">&#125;</div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>代码基本是一致的, 除了初始化时规范的写法有细节差异, 这个差异是因为NSProxy这个基类没有定义默认的init方法。</p>
+<h4>1.经测试发现以下两个在<nsobject>中定义的接口, 在二者之间表现是不一致的:</nsobject></h4>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">NSString *string = @&quot;test&quot;;</div><div class="line">THProxyA *proxyA = [[THProxyA alloc] initWithObject:string];</div><div class="line">THProxyB *proxyB = [[THProxyB alloc] initWithObject:string];</div><div class="line">NSLog(@&quot;%d&quot;, [proxyA respondsToSelector:@selector(length)]);</div><div class="line">NSLog(@&quot;%d&quot;, [proxyB respondsToSelector:@selector(length)]);</div><div class="line">NSLog(@&quot;%d&quot;, [proxyA isKindOfClass:[NSString class]]);</div><div class="line">NSLog(@&quot;%d&quot;, [proxyB isKindOfClass:[NSString class]]);</div></pre></td></tr></table></figure>
+<p>结果会输出完成不同的结论:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">1 0</div><div class="line">1 0</div></pre></td></tr></table></figure></p>
+<p>也就是说通过继承自NSObject的代理类是不会自动转发respondsToSelector:和isKindOfClass:这两个方法的, 而继承自NSProxy的代理类却是可以的. 测试<nsobject>中定义的其它接口二者表现都是一致的。</nsobject></p>
+<h4>2.NSObject的所有Category中定义的方法无法在THProxyB中完成转发</h4>
+
+<p>举一个很常见的例子, valueForKey:是定义在NSKeyValueCoding这个NSObject的Category中的方法, 尝试二者执行的表现。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">NSLog(@&quot;%@&quot;,[proxyA valueForKey:@&quot;length&quot;]);</div><div class="line">NSLog(@&quot;%@&quot;,[proxyB valueForKey:@&quot;length&quot;]);</div></pre></td></tr></table></figure>
+<p>这段代码第一句能正确运行, 但第二行却会抛出异常, 分析最终原因其实很简单, 因为valueForKey:是NSObject的Category中定义的方法, 让NSObject具备了这样的接口, 而消息转发是只有当接收者无法处理时才会通过forwardInvocation:来寻求能够处理的对象。</p>
+<h4>3.结论: 如此看来NSProxy确实更适合实现做为消息转发的代理类, 因为作为一个抽象类, NSProxy自身能够处理的方法极小(仅<nsobject>接口中定义的部分方法), 所以其它方法都能够按照设计的预期被转发到被代理的对象中。</nsobject></h4>
+
+
+
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/11/信号量dispatch-semaphore的理解及实际运用/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1489,7 +1651,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
