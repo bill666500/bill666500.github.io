@@ -257,6 +257,168 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/13/属性的本质/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bill">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李超的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/06/13/属性的本质/" itemprop="url">
+                  属性的本质一
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-13T17:40:40+08:00">
+                2017-06-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p></p><h3>@property 的本质是什么？</h3><p></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@property = ivar + getter + setter</div></pre></td></tr></table></figure>
+<h4>1.验证</h4>
+
+<p>talk is cheap, show me the code~</p>
+<p>我们在类里面添加个属性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">#import &lt;UIKit/UIKit.h&gt;</div><div class="line"></div><div class="line">@interface ViewController : UIViewController</div><div class="line"></div><div class="line">@property (nonatomic, copy) NSString *name;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>在实现方法里代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">#import &quot;ViewController.h&quot;</div><div class="line">#import &lt;objc/runtime.h&gt;</div><div class="line"></div><div class="line">@interface ViewController ()</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">@implementation ViewController</div><div class="line"></div><div class="line">- (void)viewDidLoad &#123;</div><div class="line">    [super viewDidLoad];  </div><div class="line">    unsigned int count;</div><div class="line">    objc_property_t *propertyList = class_copyPropertyList([self class], &amp;count);</div><div class="line">    for (unsigned int i = 0; i&lt; count; i++)</div><div class="line">    &#123;</div><div class="line">        const char *name = property_getName(propertyList[i]);</div><div class="line">        NSLog(@&quot;__%@&quot;,[NSString stringWithUTF8String:name]);</div><div class="line">        objc_property_t property = propertyList[i];</div><div class="line">        const char *a = property_getAttributes(property);</div><div class="line">        NSLog(@&quot;属性信息__%@&quot;,[NSString stringWithUTF8String:a]);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)didReceiveMemoryWarning &#123;</div><div class="line">    [super didReceiveMemoryWarning];</div><div class="line">    // Dispose of any resources that can be recreated.</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>输出结果为:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">__name</div><div class="line">属性信息__T@&quot;NSString&quot;,C,N,V_name</div></pre></td></tr></table></figure>
+<p>再利用class_copyMethodList查看方法列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">u_int methodCount;</div><div class="line">NSMutableArray *methodList = [NSMutableArray array];</div><div class="line">Method *methods = class_copyMethodList([self class], &amp;methodCount);</div><div class="line">for (int i = 0; i &lt; methodCount; i++)</div><div class="line">&#123;</div><div class="line">    SEL name = method_getName(methods[i]);</div><div class="line">    NSString *strName = [NSString stringWithCString:sel_getName(name) encoding:NSUTF8StringEncoding];</div><div class="line">    [methodList addObject:strName];</div><div class="line">&#125;</div><div class="line">free(methods);</div><div class="line"></div><div class="line">NSLog(@&quot;方法列表:%@&quot;,methodList);</div></pre></td></tr></table></figure>
+<p>结果:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">方法列表:    (</div><div class="line">    &quot;.cxx_destruct&quot;,</div><div class="line">    name,</div><div class="line">    didReceiveMemoryWarning,</div><div class="line">    viewDidLoad,</div><div class="line">    &quot;setName:&quot;,</div><div class="line">)</div></pre></td></tr></table></figure>
+<p></p><h4>分析</h4><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">属性信息__T@&quot;NSString&quot;,C,N,V_name</div></pre></td></tr></table></figure><p></p>
+<p>这一堆信息是什么?<br>翻阅Objective-C Runtime Programming Guide <a href="https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html" target="_blank" rel="external">https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html</a> 找到线索，不难发现</p>
+<p><img src="/2017/06/13/属性的本质/1.png" alt="image"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">//T@&quot;NSString&quot;,C,N,V_name</div><div class="line">//T 类型</div><div class="line">//C copy</div><div class="line">//N nonatomic</div><div class="line">//V 实例变量</div></pre></td></tr></table></figure>
+<p>最终可以看出<strong>@property = ivar + getter + setter</strong><br>下篇讲解利用runtime实现的方法。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1306,7 +1468,7 @@
             <p><strong>Python爬虫利器之使用BeautifulSoup抓取所需内容(一)</strong></p>
 <p>最近由于兴趣使然，对于Python爬虫产生了兴趣，所以平时生活中会抽出功夫学习爬虫，文章是自己的爬虫基础实例，以后博客不仅会有iOS的内容，也会Python爬虫，记录自己的代码生涯。</p>
 <p>以糗事百科为例来说明，<a href="http://www.qiushibaike.com/text/" target="_blank">http://www.qiushibaike.com/text/</a>，抓取原创笑话段子。</p>
-<p><img src="/Users/lichao/Desktop/blog/source/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\" alt="image">.png)</p>
+<p><img src="/2017/05/28/Python爬虫利器之使用BeautifulSoup抓取所需内容(一)/Users/lichao/Desktop/blog/source/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容/(一\" alt="image">.png)</p>
 <!--![image](/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\).png)-->
 <p>发现内容都在span标签中，如果写 find_all(“span”) 可以抓取到段子的内容，但是还包含了网页上其他span的内容。这时我们往上一级标签上看，&lt;div class=”content&gt; 就是只包含了段子内容的标签。取出来的link的内容就是div，取它的span中的内容就是我们需要段子的内容。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">import requests</div><div class="line"></div><div class="line">from bs4 import BeautifulSoup</div><div class="line"></div><div class="line">html = requests.get(&apos;http://www.qiushibaike.com/text/&apos;).content</div><div class="line"></div><div class="line">soup = BeautifulSoup(html,&apos;lxml&apos;)</div><div class="line">links = soup.find_all(&apos;div&apos;,class_=&apos;content&apos;)</div><div class="line"></div><div class="line">for link in links:</div><div class="line">	print(link.span.get_text())</div></pre></td></tr></table></figure>
@@ -1630,152 +1792,13 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/18/iOS中self.和下划线的区别/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Bill">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="李超的技术博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/03/18/iOS中self.和下划线的区别/" itemprop="url">
-                  iOS中self.和下划线的区别
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-18T17:56:00+08:00">
-                2017-03-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS基础</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>  self.xxx 通过访问的方法的引用:包含了set和get方法。而通过_.xxx方法是获取自己的实例变量，不包含set和get方法。<br>  self.xxx是对属性的访问；而<em>xxx是对局部变量的访问。所有被声明为属性的成员，再ios5之前需要使用编译指令@synthesize 来告诉编译器帮助生成属性的getter和setter方法，之后这个指令可以不用认为的指定了，默认情况下编译器会帮助我们生成。编译器在生成getter，setter方法时是有优先级的，他首先查找当前的类中用户是否定义属性的getter，setter方法，如果有，则编译器会跳过，不会再生成，使用用户定义的方法。也就是说你在使用self.xxx时是调用一个getter方法。会使引用计数加1，而</em>.xxx不会使用引用技术加1的。<br>  所有使用self.xxx是更好的选择，因为这样可以兼容懒加载，同时也避免了使用下滑线的时候忽略了self这个指针，后者容易在block中造成循环引用。同时使用_.xxx是获取不到父类的属性，因为它只是对局部变量的访问。<br>  <strong>最后总结：self方法实际上是用了get和set方法间接调用，下划线方法是直接对变量操作。</strong></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
           
           </div>
@@ -1818,7 +1841,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
