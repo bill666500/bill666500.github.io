@@ -87,19 +87,19 @@
 
 
 
-<meta name="description" content="经常发现在一些需要使用消息转发而创建代理类时, 不同的程序员都有着不同的使用方法, 有些采用继承于NSObject, 而有一些采用继承自NSProxy。 二者都是Foundation框架中的基类, 并且都实现了这个接口, 从命名和文档中看NSProxy天生就是用来干这个事情的。 但即便如此, 它们却都定义了相同的消息转发的接口, 那我们在使用二者来完成这个工作时有什么差异呢。
-先贴一下通过二者来创">
+<meta name="description" content="接着上一章节，我们来利用runtime实现属性，思路利用runtime.h文件的2个函数完成操作，如下面所示：
+1234567891011/**  * Adds a property to a class. *  * @param cls 修改的类 * @param name 属性名字 * @param attributes 属性数组 * @param attributeCount 属性数组数">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用NSProxy和NSObject设计代理类的差异">
-<meta property="og:url" content="http://yoursite.com/2017/06/12/使用NSProxy和NSObject设计代理类的差异/index.html">
+<meta property="og:title" content="属性的本质2">
+<meta property="og:url" content="http://yoursite.com/2017/06/15/属性的本质2/index.html">
 <meta property="og:site_name" content="李超的技术博客">
-<meta property="og:description" content="经常发现在一些需要使用消息转发而创建代理类时, 不同的程序员都有着不同的使用方法, 有些采用继承于NSObject, 而有一些采用继承自NSProxy。 二者都是Foundation框架中的基类, 并且都实现了这个接口, 从命名和文档中看NSProxy天生就是用来干这个事情的。 但即便如此, 它们却都定义了相同的消息转发的接口, 那我们在使用二者来完成这个工作时有什么差异呢。
-先贴一下通过二者来创">
-<meta property="og:updated_time" content="2017-06-12T02:59:15.000Z">
+<meta property="og:description" content="接着上一章节，我们来利用runtime实现属性，思路利用runtime.h文件的2个函数完成操作，如下面所示：
+1234567891011/**  * Adds a property to a class. *  * @param cls 修改的类 * @param name 属性名字 * @param attributes 属性数组 * @param attributeCount 属性数组数">
+<meta property="og:updated_time" content="2017-06-15T08:15:15.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="使用NSProxy和NSObject设计代理类的差异">
-<meta name="twitter:description" content="经常发现在一些需要使用消息转发而创建代理类时, 不同的程序员都有着不同的使用方法, 有些采用继承于NSObject, 而有一些采用继承自NSProxy。 二者都是Foundation框架中的基类, 并且都实现了这个接口, 从命名和文档中看NSProxy天生就是用来干这个事情的。 但即便如此, 它们却都定义了相同的消息转发的接口, 那我们在使用二者来完成这个工作时有什么差异呢。
-先贴一下通过二者来创">
+<meta name="twitter:title" content="属性的本质2">
+<meta name="twitter:description" content="接着上一章节，我们来利用runtime实现属性，思路利用runtime.h文件的2个函数完成操作，如下面所示：
+1234567891011/**  * Adds a property to a class. *  * @param cls 修改的类 * @param name 属性名字 * @param attributes 属性数组 * @param attributeCount 属性数组数">
 
 
 
@@ -127,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/06/12/使用NSProxy和NSObject设计代理类的差异/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/06/15/属性的本质2/"/>
 
 
 
 
 
-  <title> 使用NSProxy和NSObject设计代理类的差异 | 李超的技术博客 </title>
+  <title> 属性的本质2 | 李超的技术博客 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -262,7 +262,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/12/使用NSProxy和NSObject设计代理类的差异/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/15/属性的本质2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Bill">
@@ -283,7 +283,7 @@
             
             
               
-                使用NSProxy和NSObject设计代理类的差异
+                属性的本质2
               
             
           </h1>
@@ -298,8 +298,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-12T10:47:06+08:00">
-                2017-06-12
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-15T15:40:01+08:00">
+                2017-06-15
               </time>
             
 
@@ -361,26 +361,25 @@
       
 
       
-        <p>经常发现在一些需要使用消息转发而创建代理类时, 不同的程序员都有着不同的使用方法, 有些采用继承于NSObject, 而有一些采用继承自NSProxy。 二者都是Foundation框架中的基类, 并且都实现了<nsobject>这个接口, 从命名和文档中看NSProxy天生就是用来干这个事情的。 但即便如此, 它们却都定义了相同的消息转发的接口, 那我们在使用二者来完成这个工作时有什么差异呢。</nsobject></p>
-<p>先贴一下通过二者来创建代理类的最基本实现代码。<br>继承自NSProxy</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">@interface THProxyA : NSProxy</div><div class="line">@property (nonatomic, strong) id target;</div><div class="line">@end</div><div class="line">@implementation THProxyA</div><div class="line">- (id)initWithObject:(id)object &#123;</div><div class="line">    self.target = object;</div><div class="line">    return self;</div><div class="line">&#125;</div><div class="line">- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector &#123;</div><div class="line">    return [self.target methodSignatureForSelector:selector];</div><div class="line">&#125;</div><div class="line">- (void)forwardInvocation:(NSInvocation *)invocation &#123;</div><div class="line">    [invocation invokeWithTarget:self.target];</div><div class="line">&#125;</div><div class="line">@end</div></pre></td></tr></table></figure>
-<p>继承自NSObject</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">@interface THProxyB : NSObject</div><div class="line">@property (nonatomic, strong) id target;</div><div class="line">@end</div><div class="line">@implementation THProxyB</div><div class="line">- (id)initWithObject:(id)object &#123;</div><div class="line">    self = [super init];</div><div class="line">    if (self) &#123;</div><div class="line">        self.target = object;</div><div class="line">    &#125;</div><div class="line">    return self;</div><div class="line">&#125;</div><div class="line">- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector &#123;</div><div class="line">    return [self.target methodSignatureForSelector:selector];</div><div class="line">&#125;</div><div class="line">- (void)forwardInvocation:(NSInvocation *)invocation &#123;</div><div class="line">    [invocation invokeWithTarget:self.target];</div><div class="line">&#125;</div><div class="line">@end</div></pre></td></tr></table></figure>
-<p>代码基本是一致的, 除了初始化时规范的写法有细节差异, 这个差异是因为NSProxy这个基类没有定义默认的init方法。</p>
-<h4>1.经测试发现以下两个在<nsobject>中定义的接口, 在二者之间表现是不一致的:</nsobject></h4>
+        <p>  接着上一章节，我们来利用runtime实现属性，思路利用runtime.h文件的2个函数完成操作，如下面所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">/** </div><div class="line"> * Adds a property to a class.</div><div class="line"> * </div><div class="line"> * @param cls 修改的类</div><div class="line"> * @param name 属性名字</div><div class="line"> * @param attributes 属性数组</div><div class="line"> * @param attributeCount 属性数组数量</div><div class="line"> * @return y 成功,n失败</div><div class="line"> */</div><div class="line">OBJC_EXPORT BOOL class_addProperty(Class cls, const char *name, const objc_property_attribute_t *attributes, unsigned int attributeCount)</div><div class="line">    OBJC_AVAILABLE(10.7, 4.3, 9.0, 1.0);</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">/** </div><div class="line"> * Adds a new method to a class with a given name and implementation.</div><div class="line"> * </div><div class="line"> * @param cls The class to which to add a method.//添加方法名字</div><div class="line"> * @param name A selector that specifies the name of the method being added.//方法名称</div><div class="line"> * @param imp A function which is the implementation of the new method. The function must take at least two arguments—self and _cmd.//方法的实现必须至少2个参数,self 和 _cmd</div><div class="line"> * @param types An array of characters that describe the types of the arguments to the method. //描述</div><div class="line"> * </div><div class="line"> * @return YES if the method was added successfully, otherwise NO   //y成功,n失败</div><div class="line"> *  (for example, the class already contains a method implementation with that name).</div><div class="line"> *</div><div class="line"> * @note class_addMethod will add an override of a superclass&apos;s implementation, //会覆盖superclass 的实现;</div><div class="line"> *  but will not replace an existing implementation in this class. //已经存在的不会替换</div><div class="line"> *  To change an existing implementation, use method_setImplementation.//想要改变,使用method_setImplementation方法</div><div class="line"> */</div><div class="line">OBJC_EXPORT BOOL class_addMethod(Class cls, SEL name, IMP imp, </div><div class="line">                                 const char *types) </div><div class="line">    OBJC_AVAILABLE(10.5, 2.0, 9.0, 1.0);</div></pre></td></tr></table></figure>
+<p>还是老话，talk is cheap, show me the code~<br>我们要生成一个name的属性;结果要跟@property 一样;</p>
+<h3>1. 生成属性</h3>
 
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">NSString *string = @&quot;test&quot;;</div><div class="line">THProxyA *proxyA = [[THProxyA alloc] initWithObject:string];</div><div class="line">THProxyB *proxyB = [[THProxyB alloc] initWithObject:string];</div><div class="line">NSLog(@&quot;%d&quot;, [proxyA respondsToSelector:@selector(length)]);</div><div class="line">NSLog(@&quot;%d&quot;, [proxyB respondsToSelector:@selector(length)]);</div><div class="line">NSLog(@&quot;%d&quot;, [proxyA isKindOfClass:[NSString class]]);</div><div class="line">NSLog(@&quot;%d&quot;, [proxyB isKindOfClass:[NSString class]]);</div></pre></td></tr></table></figure>
-<p>结果会输出完成不同的结论:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">1 0</div><div class="line">1 0</div></pre></td></tr></table></figure></p>
-<p>也就是说通过继承自NSObject的代理类是不会自动转发respondsToSelector:和isKindOfClass:这两个方法的, 而继承自NSProxy的代理类却是可以的. 测试<nsobject>中定义的其它接口二者表现都是一致的。</nsobject></p>
-<h4>2.NSObject的所有Category中定义的方法无法在THProxyB中完成转发</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">objc_property_attribute_t type = &#123; &quot;T&quot;, &quot;@\&quot;NSString\&quot;&quot; &#125;;</div><div class="line">objc_property_attribute_t ownership = &#123; &quot;C&quot;, &quot;&quot; &#125;; // C = copy</div><div class="line">objc_property_attribute_t nonatomic = &#123; &quot;N&quot;, &quot;&quot; &#125;; //nonatomic</div><div class="line">objc_property_attribute_t backingivar  = &#123; &quot;V&quot;, &quot;_name&quot; &#125;;//V 实例变量</div><div class="line">objc_property_attribute_t attrs[] = &#123; type, ownership,nonatomic, backingivar &#125;;</div><div class="line">class_addProperty([self class], &quot;name&quot;, attrs, 4);</div></pre></td></tr></table></figure>
+<h3>2. 生成方法</h3>
 
-<p>举一个很常见的例子, valueForKey:是定义在NSKeyValueCoding这个NSObject的Category中的方法, 尝试二者执行的表现。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">NSLog(@&quot;%@&quot;,[proxyA valueForKey:@&quot;length&quot;]);</div><div class="line">NSLog(@&quot;%@&quot;,[proxyB valueForKey:@&quot;length&quot;]);</div></pre></td></tr></table></figure>
-<p>这段代码第一句能正确运行, 但第二行却会抛出异常, 分析最终原因其实很简单, 因为valueForKey:是NSObject的Category中定义的方法, 让NSObject具备了这样的接口, 而消息转发是只有当接收者无法处理时才会通过forwardInvocation:来寻求能够处理的对象。</p>
-<h4>3.结论: 如此看来NSProxy确实更适合实现做为消息转发的代理类, 因为作为一个抽象类, NSProxy自身能够处理的方法极小(仅<nsobject>接口中定义的部分方法), 所以其它方法都能够按照设计的预期被转发到被代理的对象中。</nsobject></h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">NSString *nameGetter(id self, SEL _cmd) &#123;</div><div class="line">    Ivar ivar = class_getInstanceVariable([self class], &quot;_privateName&quot;);</div><div class="line">    return object_getIvar(self, ivar);</div><div class="line">&#125;</div><div class="line">void myNameSetter(id self, SEL _cmd, NSString *newName) &#123;</div><div class="line">    Ivar ivar = class_getInstanceVariable([self class], &quot;_privateName&quot;);</div><div class="line">    id oldName = object_getIvar(self, ivar);</div><div class="line">    if (oldName != newName) object_setIvar(self, ivar, [newName copy]);</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">//其中 “v@:” 表示返回值和参数</div><div class="line"></div><div class="line">if(class_addMethod([self class],  NSSelectorFromString(@&quot;name&quot;), (IMP)nameGetter, &quot;@@:&quot;))</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name get 方法添加成功&quot;);</div><div class="line">&#125;</div><div class="line">else</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name get 方法添加失败&quot;);</div><div class="line">&#125;</div><div class="line"></div><div class="line">if(class_addMethod([self class], NSSelectorFromString(@&quot;setName:&quot;), (IMP)nameSetter, &quot;v@:@&quot;))</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name set 方法添加成功&quot;);</div><div class="line">&#125;</div><div class="line">else</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name set 方法添加失败&quot;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3>3. 打印结果</h3>
 
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">方法列表:    (</div><div class="line">    &quot;setName:&quot;,</div><div class="line">    &quot;name&quot;,</div><div class="line">    &quot;touchesBegan:withEvent:&quot;,</div><div class="line">    &quot;viewDidLoad&quot;,</div><div class="line">    &quot;.cxx_destruct&quot;,</div><div class="line">    &quot;setName:&quot;,</div><div class="line">    &quot;name&quot;,</div></pre></td></tr></table></figure>
+<h3>4. 扩展</h3>
 
-
+<p>cxx_destruct 字面意思是自毁方法?</p>
+<p>我们从第一篇代码结果显示会有这个，那这个到底是什么意思呢？<br>查找资料可以根据这篇博客:<a href="http://blog.jobbole.com/65028/" target="_blank" rel="external">http://blog.jobbole.com/65028/</a>来了解一下：<br>.cxx_destruct方法原本是为了C++对象析构的，ARC借用了这个方法插入代码实现了自动内存释放的工作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">1.只有在ARC下这个方法才会出现（试验代码的情况下）</div><div class="line">2.只有当前类拥有实例变量时（不论是不是用property）这个方法才会出现，且父类的实例变量不会导致子类拥有这个方法</div><div class="line">3.出现这个方法和变量是否被赋值，赋值成什么没有关系</div></pre></td></tr></table></figure>
+<p>至此我们针对属性的本质有了深入的了解，争取以后每天都写博客针对OC、计算机原理，当然还有Python爬虫，最近由于时间紧工作忙碌，没有来得及写Python爬虫博客和做一些Demo，为此争取多挤出一些时间来写下，有了爬虫技术才能有数据，有数据就可以做分析了~</p>
 
       
     </div>
@@ -417,8 +416,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/06/11/信号量dispatch-semaphore的理解及实际运用/" rel="next" title="信号量dispatch_semaphore的理解及实际运用">
-                <i class="fa fa-chevron-left"></i> 信号量dispatch_semaphore的理解及实际运用
+              <a href="/2017/06/13/属性的本质/" rel="next" title="属性的本质1">
+                <i class="fa fa-chevron-left"></i> 属性的本质1
               </a>
             
           </div>
@@ -426,10 +425,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/06/12/自己动手构造编译系统：编译、汇编与链接笔记3/" rel="prev" title="自己动手构造编译系统：编译、汇编与链接笔记3">
-                自己动手构造编译系统：编译、汇编与链接笔记3 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -549,7 +544,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">1.经测试发现以下两个在中定义的接口, 在二者之间表现是不一致的:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">2.NSObject的所有Category中定义的方法无法在THProxyB中完成转发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">3.结论: 如此看来NSProxy确实更适合实现做为消息转发的代理类, 因为作为一个抽象类, NSProxy自身能够处理的方法极小(仅接口中定义的部分方法), 所以其它方法都能够按照设计的预期被转发到被代理的对象中。</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">1. 生成属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">2. 生成方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">3. 打印结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text">4. 扩展</span></a></li></ol></div>
             
 
           </div>

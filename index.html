@@ -257,6 +257,167 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/15/属性的本质2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bill">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李超的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/06/15/属性的本质2/" itemprop="url">
+                  属性的本质2
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-15T15:40:01+08:00">
+                2017-06-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>  接着上一章节，我们来利用runtime实现属性，思路利用runtime.h文件的2个函数完成操作，如下面所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">/** </div><div class="line"> * Adds a property to a class.</div><div class="line"> * </div><div class="line"> * @param cls 修改的类</div><div class="line"> * @param name 属性名字</div><div class="line"> * @param attributes 属性数组</div><div class="line"> * @param attributeCount 属性数组数量</div><div class="line"> * @return y 成功,n失败</div><div class="line"> */</div><div class="line">OBJC_EXPORT BOOL class_addProperty(Class cls, const char *name, const objc_property_attribute_t *attributes, unsigned int attributeCount)</div><div class="line">    OBJC_AVAILABLE(10.7, 4.3, 9.0, 1.0);</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">/** </div><div class="line"> * Adds a new method to a class with a given name and implementation.</div><div class="line"> * </div><div class="line"> * @param cls The class to which to add a method.//添加方法名字</div><div class="line"> * @param name A selector that specifies the name of the method being added.//方法名称</div><div class="line"> * @param imp A function which is the implementation of the new method. The function must take at least two arguments—self and _cmd.//方法的实现必须至少2个参数,self 和 _cmd</div><div class="line"> * @param types An array of characters that describe the types of the arguments to the method. //描述</div><div class="line"> * </div><div class="line"> * @return YES if the method was added successfully, otherwise NO   //y成功,n失败</div><div class="line"> *  (for example, the class already contains a method implementation with that name).</div><div class="line"> *</div><div class="line"> * @note class_addMethod will add an override of a superclass&apos;s implementation, //会覆盖superclass 的实现;</div><div class="line"> *  but will not replace an existing implementation in this class. //已经存在的不会替换</div><div class="line"> *  To change an existing implementation, use method_setImplementation.//想要改变,使用method_setImplementation方法</div><div class="line"> */</div><div class="line">OBJC_EXPORT BOOL class_addMethod(Class cls, SEL name, IMP imp, </div><div class="line">                                 const char *types) </div><div class="line">    OBJC_AVAILABLE(10.5, 2.0, 9.0, 1.0);</div></pre></td></tr></table></figure>
+<p>还是老话，talk is cheap, show me the code~<br>我们要生成一个name的属性;结果要跟@property 一样;</p>
+<h3>1. 生成属性</h3>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">objc_property_attribute_t type = &#123; &quot;T&quot;, &quot;@\&quot;NSString\&quot;&quot; &#125;;</div><div class="line">objc_property_attribute_t ownership = &#123; &quot;C&quot;, &quot;&quot; &#125;; // C = copy</div><div class="line">objc_property_attribute_t nonatomic = &#123; &quot;N&quot;, &quot;&quot; &#125;; //nonatomic</div><div class="line">objc_property_attribute_t backingivar  = &#123; &quot;V&quot;, &quot;_name&quot; &#125;;//V 实例变量</div><div class="line">objc_property_attribute_t attrs[] = &#123; type, ownership,nonatomic, backingivar &#125;;</div><div class="line">class_addProperty([self class], &quot;name&quot;, attrs, 4);</div></pre></td></tr></table></figure>
+<h3>2. 生成方法</h3>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">NSString *nameGetter(id self, SEL _cmd) &#123;</div><div class="line">    Ivar ivar = class_getInstanceVariable([self class], &quot;_privateName&quot;);</div><div class="line">    return object_getIvar(self, ivar);</div><div class="line">&#125;</div><div class="line">void myNameSetter(id self, SEL _cmd, NSString *newName) &#123;</div><div class="line">    Ivar ivar = class_getInstanceVariable([self class], &quot;_privateName&quot;);</div><div class="line">    id oldName = object_getIvar(self, ivar);</div><div class="line">    if (oldName != newName) object_setIvar(self, ivar, [newName copy]);</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">//其中 “v@:” 表示返回值和参数</div><div class="line"></div><div class="line">if(class_addMethod([self class],  NSSelectorFromString(@&quot;name&quot;), (IMP)nameGetter, &quot;@@:&quot;))</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name get 方法添加成功&quot;);</div><div class="line">&#125;</div><div class="line">else</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name get 方法添加失败&quot;);</div><div class="line">&#125;</div><div class="line"></div><div class="line">if(class_addMethod([self class], NSSelectorFromString(@&quot;setName:&quot;), (IMP)nameSetter, &quot;v@:@&quot;))</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name set 方法添加成功&quot;);</div><div class="line">&#125;</div><div class="line">else</div><div class="line">&#123;</div><div class="line">    NSLog(@&quot;name set 方法添加失败&quot;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3>3. 打印结果</h3>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">方法列表:    (</div><div class="line">    &quot;setName:&quot;,</div><div class="line">    &quot;name&quot;,</div><div class="line">    &quot;touchesBegan:withEvent:&quot;,</div><div class="line">    &quot;viewDidLoad&quot;,</div><div class="line">    &quot;.cxx_destruct&quot;,</div><div class="line">    &quot;setName:&quot;,</div><div class="line">    &quot;name&quot;,</div></pre></td></tr></table></figure>
+<h3>4. 扩展</h3>
+
+<p>cxx_destruct 字面意思是自毁方法?</p>
+<p>我们从第一篇代码结果显示会有这个，那这个到底是什么意思呢？<br>查找资料可以根据这篇博客:<a href="http://blog.jobbole.com/65028/" target="_blank" rel="external">http://blog.jobbole.com/65028/</a>来了解一下：<br>.cxx_destruct方法原本是为了C++对象析构的，ARC借用了这个方法插入代码实现了自动内存释放的工作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">1.只有在ARC下这个方法才会出现（试验代码的情况下）</div><div class="line">2.只有当前类拥有实例变量时（不论是不是用property）这个方法才会出现，且父类的实例变量不会导致子类拥有这个方法</div><div class="line">3.出现这个方法和变量是否被赋值，赋值成什么没有关系</div></pre></td></tr></table></figure>
+<p>至此我们针对属性的本质有了深入的了解，争取以后每天都写博客针对OC、计算机原理，当然还有Python爬虫，最近由于时间紧工作忙碌，没有来得及写Python爬虫博客和做一些Demo，为此争取多挤出一些时间来写下，有了爬虫技术才能有数据，有数据就可以做分析了~</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/13/属性的本质/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -280,7 +441,7 @@
               
                 
                 <a class="post-title-link" href="/2017/06/13/属性的本质/" itemprop="url">
-                  属性的本质一
+                  属性的本质1
                 </a>
               
             
@@ -1649,149 +1810,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/13/instancetype和id区别/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Bill">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="李超的技术博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/05/13/instancetype和id区别/" itemprop="url">
-                  instancetype和id区别
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-13T03:39:07+08:00">
-                2017-05-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS基础</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>id在编译的时候不能判断对象的真实类型，而instancetype在编译的时候可以判断对象的真实类型，id和instancetype除了一个在编译时不知道真实类型, 一个在编译时知道真实类型以外, 还有一个区别，id可以用来定义变量, 可以作为返回值, 可以作为形参，instancetype只能用于作为返回值。</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1841,7 +1859,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
