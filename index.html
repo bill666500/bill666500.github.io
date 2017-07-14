@@ -257,6 +257,173 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/14/App卡顿监测/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bill">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李超的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/07/14/App卡顿监测/" itemprop="url">
+                  App卡顿监测
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-14T13:16:00+08:00">
+                2017-07-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>由于最近需求多忙于工作，最近很少更新博客了，希望这段时间能够多花时间谢谢博客，补充技术技能。<br>今天要介绍的RunLoop使用场景很有意思，在做长期项目，需要跟踪解决用户问题非常有用。<br>使用RunLoop 监测主线程的卡顿，并将卡顿时的线程堆栈信息保存下来，下次上传到服务器。</p>
+<h3>参考资料</h3>
+
+<p>关于今天要介绍的使用RunLoop 监测主线程卡顿的资料如下：</p>
+<p><a href="https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=207890859&idx=1&sn=e98dd604cdb854e7a5808d2072c29162" target="_blank" rel="external">微信iOS卡顿监控系统</a>（这篇文章要首先阅读，了解有哪些情况会引起主线程卡顿，监测到卡顿后怎么处理等）<br><br><a href="http://www.jianshu.com/p/71cfbcb15842" target="_blank" rel="external">简单监测iOS卡顿的demo </a> （使用RunLoop监测卡顿的例子）</p>
+<h3>原理</h3>
+
+<p>官方文档说明了RunLoop的执行顺序：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">1. Notify observers that the run loop has been entered.</div><div class="line">2. Notify observers that any ready timers are about to fire.</div><div class="line">3. Notify observers that any input sources that are not port based are about to fire.</div><div class="line">4. Fire any non-port-based input sources that are ready to fire.</div><div class="line">5. If a port-based input source is ready and waiting to fire, process the event immediately. Go to step 9.</div><div class="line">6. Notify observers that the thread is about to sleep.</div><div class="line">7. Put the thread to sleep until one of the following events occurs:</div><div class="line"> * An event arrives for a port-based input source.</div><div class="line"> * A timer fires.</div><div class="line"> * The timeout value set for the run loop expires.</div><div class="line"> * The run loop is explicitly woken up.</div><div class="line">8. Notify observers that the thread just woke up.</div><div class="line">9. Process the pending event.</div><div class="line"> * If a user-defined timer fired, process the timer event and restart the loop. Go to step 2.</div><div class="line"> * If an input source fired, deliver the event.</div><div class="line"> * If the run loop was explicitly woken up but has not yet timed out, restart the loop. Go to step 2.</div><div class="line">10. Notify observers that the run loop has exited.</div></pre></td></tr></table></figure>
+<p>用伪代码来实现就是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line">/// 1. 通知Observers，即将进入RunLoop</div><div class="line">    /// 此处有Observer会创建AutoreleasePool: _objc_autoreleasePoolPush();</div><div class="line">    __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(kCFRunLoopEntry);</div><div class="line">do &#123;</div><div class="line"></div><div class="line">        /// 2. 通知 Observers: 即将触发 Timer 回调。</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(kCFRunLoopBeforeTimers);</div><div class="line">        /// 3. 通知 Observers: 即将触发 Source (非基于port的,Source0) 回调。</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(kCFRunLoopBeforeSources);</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__(block);</div><div class="line"></div><div class="line">        /// 4. 触发 Source0 (非基于port的) 回调。</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__(source0);</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__(block);</div><div class="line"></div><div class="line">        /// 6. 通知Observers，即将进入休眠</div><div class="line">        /// 此处有Observer释放并新建AutoreleasePool: _objc_autoreleasePoolPop(); _objc_autoreleasePoolPush();</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(kCFRunLoopBeforeWaiting);</div><div class="line"></div><div class="line">        /// 7. sleep to wait msg.</div><div class="line">        mach_msg() -&gt; mach_msg_trap();</div><div class="line"></div><div class="line"></div><div class="line">        /// 8. 通知Observers，线程被唤醒</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(kCFRunLoopAfterWaiting);</div><div class="line"></div><div class="line">        /// 9. 如果是被Timer唤醒的，回调Timer</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_A_TIMER_CALLBACK_FUNCTION__(timer);</div><div class="line"></div><div class="line">        /// 9. 如果是被dispatch唤醒的，执行所有调用 dispatch_async 等方法放入main queue 的 block</div><div class="line">        __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__(dispatched_block);</div><div class="line"></div><div class="line">        /// 9. 如果如果Runloop是被 Source1 (基于port的) 的事件唤醒了，处理这个事件</div><div class="line">        __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__(source1);</div><div class="line"></div><div class="line"></div><div class="line">    &#125; while (...);</div><div class="line"></div><div class="line">    /// 10. 通知Observers，即将退出RunLoop</div><div class="line">    /// 此处有Observer释放AutoreleasePool: _objc_autoreleasePoolPop();</div><div class="line">    __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(kCFRunLoopExit);</div></pre></td></tr></table></figure>
+<p>主线程的RunLoop是在应用启动时自动开启的，也没有超时时间，所以正常情况下，主线程的RunLoop 只会在 2—9 之间无限循环下去。<br>那么，我们只需要在主线程的RunLoop中添加一个observer，检测从 kCFRunLoopBeforeSources 到 kCFRunLoopBeforeWaiting 花费的时间 是否过长。如果花费的时间大于某一个阙值，我们就认为有卡顿，并把当前的线程堆栈转储到文件中，并在以后某个合适的时间，将卡顿信息文件上传到服务器。</p>
+<h3>实现步骤</h3>
+
+<p>在看了上面的两个监测卡顿的示例Demo后，我按照上面讲述的思路写了一个Demo，应该更容易理解吧。<br>第一步，创建一个子线程，在线程启动时，启动其RunLoop。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">+ (instancetype)shareMonitor</div><div class="line">&#123;</div><div class="line">    static dispatch_once_t onceToken;</div><div class="line">    dispatch_once(&amp;onceToken, ^&#123;</div><div class="line">        instance = [[[self class] alloc] init];</div><div class="line">        instance.monitorThread = [[NSThread alloc] initWithTarget:self selector:@selector(monitorThreadEntryPoint) object:nil];</div><div class="line">        [instance.monitorThread start];</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    return instance;</div><div class="line">&#125;</div><div class="line"></div><div class="line">+ (void)monitorThreadEntryPoint</div><div class="line">&#123;</div><div class="line">    @autoreleasepool &#123;</div><div class="line">        [[NSThread currentThread] setName:@&quot;FluencyMonitor&quot;];</div><div class="line">        NSRunLoop *runLoop = [NSRunLoop currentRunLoop];</div><div class="line">        [runLoop addPort:[NSMachPort port] forMode:NSDefaultRunLoopMode];</div><div class="line">        [runLoop run];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>第二步，在开始监测时，往主线程的RunLoop中添加一个observer，并往子线程中添加一个定时器，每0.5秒检测一次耗时的时长。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">- (void)start</div><div class="line">&#123;</div><div class="line">    if (_observer) &#123;</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 1.创建observer</div><div class="line">    CFRunLoopObserverContext context = &#123;0,(__bridge void*)self, NULL, NULL, NULL&#125;;</div><div class="line">    _observer = CFRunLoopObserverCreate(kCFAllocatorDefault,</div><div class="line">                                              kCFRunLoopAllActivities,</div><div class="line">                                              YES,</div><div class="line">                                              0,</div><div class="line">                                              &amp;runLoopObserverCallBack,</div><div class="line">                                              &amp;context);</div><div class="line">    // 2.将observer添加到主线程的RunLoop中</div><div class="line">    CFRunLoopAddObserver(CFRunLoopGetMain(), _observer, kCFRunLoopCommonModes);</div><div class="line"></div><div class="line">    // 3.创建一个timer，并添加到子线程的RunLoop中</div><div class="line">    [self performSelector:@selector(addTimerToMonitorThread) onThread:self.monitorThread withObject:nil waitUntilDone:NO modes:@[NSRunLoopCommonModes]];</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)addTimerToMonitorThread</div><div class="line">&#123;</div><div class="line">    if (_timer) &#123;</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line">    // 创建一个timer</div><div class="line">    CFRunLoopRef currentRunLoop = CFRunLoopGetCurrent();</div><div class="line">    CFRunLoopTimerContext context = &#123;0, (__bridge void*)self, NULL, NULL, NULL&#125;;</div><div class="line">    _timer = CFRunLoopTimerCreate(kCFAllocatorDefault, 0.1, 0.01, 0, 0,</div><div class="line">                                                   &amp;runLoopTimerCallBack, &amp;context);</div><div class="line">    // 添加到子线程的RunLoop中</div><div class="line">    CFRunLoopAddTimer(currentRunLoop, _timer, kCFRunLoopCommonModes);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>第三步，补充观察者回调处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">static void runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info)&#123;</div><div class="line">    FluencyMonitor *monitor = (__bridge FluencyMonitor*)info;</div><div class="line">    NSLog(@&quot;MainRunLoop---%@&quot;,[NSThread currentThread]);</div><div class="line">    switch (activity) &#123;</div><div class="line">        case kCFRunLoopEntry:</div><div class="line">            NSLog(@&quot;kCFRunLoopEntry&quot;);</div><div class="line">            break;</div><div class="line">        case kCFRunLoopBeforeTimers:</div><div class="line">            NSLog(@&quot;kCFRunLoopBeforeTimers&quot;);</div><div class="line">            break;</div><div class="line">        case kCFRunLoopBeforeSources:</div><div class="line">            NSLog(@&quot;kCFRunLoopBeforeSources&quot;);</div><div class="line">            monitor.startDate = [NSDate date];</div><div class="line">            monitor.excuting = YES;</div><div class="line">            break;</div><div class="line">        case kCFRunLoopBeforeWaiting:</div><div class="line">            NSLog(@&quot;kCFRunLoopBeforeWaiting&quot;);</div><div class="line">            monitor.excuting = NO;</div><div class="line">            break;</div><div class="line">        case kCFRunLoopAfterWaiting:</div><div class="line">            NSLog(@&quot;kCFRunLoopAfterWaiting&quot;);</div><div class="line">            break;</div><div class="line">        case kCFRunLoopExit:</div><div class="line">            NSLog(@&quot;kCFRunLoopExit&quot;);</div><div class="line">            break;</div><div class="line">        default:</div><div class="line">            break;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从打印信息来看，RunLoop进入睡眠状态的时间可能会非常短，有时候只有1毫秒，有时候甚至1毫秒都不到，静止不动时，则会长时间进入睡觉状态。</p>
+<p>因为主线程中的block、交互事件、以及其他任务都是在kCFRunLoopBeforeSources 到 kCFRunLoopBeforeWaiting 之前执行，所以我在即将开始执行Sources 时，记录一下时间，并把正在执行任务的标记置为YES，将要进入睡眠状态时，将正在执行任务的标记置为NO。</p>
+<p>第四步，补充timer 的回调处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">static void runLoopTimerCallBack(CFRunLoopTimerRef timer, void *info)</div><div class="line">&#123;</div><div class="line">    FluencyMonitor *monitor = (__bridge FluencyMonitor*)info;</div><div class="line">    if (!monitor.excuting) &#123;</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 如果主线程正在执行任务，并且这一次loop 执行到 现在还没执行完，那就需要计算时间差</div><div class="line">    NSTimeInterval excuteTime = [[NSDate date] timeIntervalSinceDate:monitor.startDate];</div><div class="line">    NSLog(@&quot;定时器---%@&quot;,[NSThread currentThread]);</div><div class="line">    NSLog(@&quot;主线程执行了---%f秒&quot;,excuteTime);</div><div class="line"></div><div class="line">    if (excuteTime &gt;= 0.01) &#123;</div><div class="line">        NSLog(@&quot;线程卡顿了%f秒&quot;,excuteTime);</div><div class="line">        [monitor handleStackInfo];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>timer 每 0.01秒执行一次，如果当前正在执行任务的状态为YES，并且从开始执行到现在的时间大于阙值，则把堆栈信息保存下来，便于后面处理。<br>为了能够捕获到堆栈信息，我把timer的间隔调的很小（0.01），而评定为卡顿的阙值也调的很小（0.01）。 实际使用时这两个值应该是比较大，timer间隔为1s，卡顿阙值为2s即可。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/15/属性的本质2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1667,149 +1834,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/13/AutoRelease深入理解原理/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Bill">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="李超的技术博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/05/13/AutoRelease深入理解原理/" itemprop="url">
-                  AutoRelease深入理解原理
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-13T04:25:46+08:00">
-                2017-05-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS基础</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>  Autorelease机制是iOS开发者管理对象内存的好伙伴，MRC中，调用[obj autorelease]来延迟内存的释放是一件简单自然的事，ARC下，我们甚至可以完全不知道Autorelease就能管理好内存。而在这背后，objc和编译器都帮我们做了哪些事呢，它们是如何协作来正确管理内存的呢？<br>  <strong>Autorelease对象什么时候释放？</strong><br>  <strong>在没有手加Autorelease Pool的情况下，Autorelease对象是在当前的runloop迭代结束时释放的，而它能够释放的原因是系统在每个runloop迭代中都加入了自动释放池Push和Pop。</strong><br>  从程序启动到加载完成是一个完整的运行循环，然后会停下来，等待用户交互，用户的每一次交互都会启动一次运行循环，来处理用户所有的点击事件、触摸事件。我们都是知道：所有autorelease的对象，在出了作用域之后，会被自动添加到最近创建的自动释放池中。但是如果每次都放进应用程序的main.m中的autoreleasepool中，迟早有被撑满的一刻。这个过程中必定有一个释放的动作。何时？在一次完整的运行循环结束之前，会被销毁。<br>  那什么时间会创建自动释放池？运行循环检测到事件并启动后，就会创建自动释放池。<br>  子线程的 runloop 默认是不工作，无法主动创建，必须手动创建。<br>  自定义的 NSOperation 和 NSThread 需要手动创建自动释放池。比如： 自定义的 NSOperation 类中的 main 方法里就必须添加自动释放池。否则出了作用域后，自动释放对象会因为没有自动释放池去处理它，而造成内存泄露。<br>  但对于 blockOperation 和 invocationOperation 这种默认的Operation ，系统已经帮我们封装好了，不需要手动创建自动释放池。<br>  @autoreleasepool 当自动释放池被销毁或者耗尽时，会向自动释放池中的所有对象发送 release 消息，释放自动释放池中的所有对象。<br>  如果在一个vc的viewDidLoad中创建一个 Autorelease对象，那么该对象会在 viewDidAppear 方法执行前就被销毁了。<br>  子线程的 runloop 默认是不工作，无法主动创建，必须手动创建。自定义的 NSOperation 和 NSThread 需要手动创建自动释放池。比如： 自定义的 NSOperation 类中的 main 方法里就必须添加自动释放池。否则出了作用域后，自动释放对象会因为没有自动释放池去处理它，而造成内存泄露。但对于 blockOperation 和 invocationOperation 这种默认的Operation ，系统已经帮我们封装好了，不需要手动创建自动释放池。如果在一个vc的viewDidLoad中创建一个 Autorelease对象，那么该对象会在 viewDidAppear 方法执行前就被销毁了。</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1859,7 +1883,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
