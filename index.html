@@ -257,6 +257,175 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/27/Block的使用注意事项/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bill">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李超的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/07/27/Block的使用注意事项/" itemprop="url">
+                  Block的使用注意事项
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-27T14:45:30+08:00">
+                2017-07-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS基础/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1>Block的使用注意事项</h1>
+
+<h3>防止循环引用</h3>
+
+<p>众所周知，Block 在使用的时候默认会使对象的引用计数加一，所以我们需要使用 __weak 关键字来防止对象（主要是指拥有此 Block 所在对象的控制器）和 Block 循环引用。如下代码所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">MyViewController *myController = [[MyViewController alloc] init…];</div><div class="line"> // ...</div><div class="line">MyViewController * __weak weakMyViewController = myController;</div><div class="line">myController.completionHandler = ^(NSInteger result) &#123;</div><div class="line">    [weakMyViewController dismissViewControllerAnimated:YES completion:nil];</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>但是这样就可以了吗？假如是多线程的情况下，weakMyViewController已经释放了，那么就会发生闪退现象，不信我们可以做个试验，talk is cheap, show me the code.</p>
+<p>我们做个试验，有两个ViewController,两个ViewController都有按钮触发事件，关键代码如下：<br>ViewController.m文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">#import &quot;ViewController.h&quot;</div><div class="line">#import &quot;CustomController.h&quot;</div><div class="line"></div><div class="line">@interface ViewController ()</div><div class="line"></div><div class="line">- (IBAction)clickAction:(id)sender;</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">@implementation ViewController</div><div class="line"></div><div class="line">- (void)viewDidLoad &#123;</div><div class="line">    [super viewDidLoad];</div><div class="line">    // Do any additional setup after loading the view, typically from a nib.</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)didReceiveMemoryWarning &#123;</div><div class="line">    [super didReceiveMemoryWarning];</div><div class="line">    // Dispose of any resources that can be recreated.</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (IBAction)clickAction:(id)sender &#123;</div><div class="line">    CustomController *custom = [[CustomController alloc] init];</div><div class="line">    [self presentViewController:custom animated:YES completion:nil];</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>CustomController.m文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">#import &quot;CustomController.h&quot;</div><div class="line"></div><div class="line">typedef void(^CustomBlock)();</div><div class="line">typedef void(^LogBlock)();</div><div class="line"></div><div class="line">@interface CustomController ()</div><div class="line"></div><div class="line">@property (nonatomic, copy) CustomBlock block;</div><div class="line">@property (nonatomic, copy) LogBlock   logBlock;</div><div class="line"></div><div class="line">- (IBAction)clickAction:(id)sender;</div><div class="line"></div><div class="line">@end</div><div class="line"></div><div class="line">@implementation CustomController</div><div class="line"></div><div class="line">- (void)viewDidLoad &#123;</div><div class="line">    [super viewDidLoad];</div><div class="line">    // Do any additional setup after loading the view.</div><div class="line">    </div><div class="line">    self.view.backgroundColor = [UIColor whiteColor];</div><div class="line">    __weak typeof(self) weakSelf = self;</div><div class="line">    </div><div class="line">    self.logBlock = ^&#123;</div><div class="line">        NSLog(@&quot;%@&quot;,weakSelf);</div><div class="line">    &#125;;</div><div class="line">    </div><div class="line">    self.block = ^&#123;</div><div class="line">        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;</div><div class="line">            weakSelf.logBlock();</div><div class="line">        &#125;);</div><div class="line">    &#125;;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (IBAction)clickAction:(id)sender &#123;</div><div class="line">    self.block();</div><div class="line">    [self dismissViewControllerAnimated:YES completion:nil];</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (void)didReceiveMemoryWarning &#123;</div><div class="line">    [super didReceiveMemoryWarning];</div><div class="line">    // Dispose of any resources that can be recreated.</div><div class="line">&#125;</div><div class="line"></div><div class="line">@end</div></pre></td></tr></table></figure>
+<p>运行结果<br><img src="/2017/07/27/Block的使用注意事项/weak-strong dance1.png" alt="image"><br>不难发现我们直接闪退，纳尼，一看<code>weakSelf</code>是nil!!! 那我们怎么办呢？这是为后面做的铺垫，请看下面。<br></p>
+<h3>Weak-Strong Dance</h3>
+
+<p><strong>什么是 Weak-Strong Dance ？</strong></p>
+<p><strong>在使用的 Block 时， 除了使用 <strong>weak 修饰符去避免循环引用外，还可以通过名为 Weak-Strong Dance 的方式去避免循环引用。 其实 Weak-Strong Dance 并不是一个新东西，它只是 </strong>weak 的一个升级版本。主要目的是为了避免在极端情况下 __weak 这种情况会出现的问题。</strong></p>
+<p>按照上面的代码我们做些修改，只改<code>ViewDidLoad</code>中的<code>self.block</code>里面的即可。代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">self.block = ^&#123;</div><div class="line">     __strong typeof(self) strongSelf = weakSelf;</div><div class="line">      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;</div><div class="line">           strongSelf.logBlock();</div><div class="line">      &#125;);</div><div class="line"> &#125;;</div></pre></td></tr></table></figure>
+<p>这样我们就可以正常运行了，没有闪退。<code>strong typeof(weakSelf)strongSelf = weakSelf;</code>就是解决这个问题的关键~先将强引用的对象转为弱引用指针，防止了 Block 和对象之间的循环引用。再在 Block 的第一句代码出将 <code>weakSelf</code> 的弱引用转换成 <code>strongSelf</code> 这样的强引用指针，防止了<code>多线程</code>和 <code>ARC</code> 环境下弱引用随时被释放的问题（因为强引用的引用计数至少为1）。 </p>
+<p>这样就可以安心使用了吗？NO!!! 请看下文。</p>
+<h3>Weak-Strong Dance真的安全吗？</h3>
+
+<p>会有什么问题吗？有，假如在执行<code>__strong typeof(self) strongSelf = weakSelf;</code>这句之前<code>weakSelf</code>已经释放了？怎么办？我们还是按照上文的例子继续改造，这样运行结果能说明问题。代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">self.block = ^&#123;</div><div class="line">     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;</div><div class="line">         __strong typeof(self) strongSelf = weakSelf;</div><div class="line">         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;</div><div class="line">             strongSelf.logBlock();</div><div class="line">         &#125;);</div><div class="line">     &#125;);</div><div class="line"> &#125;;</div></pre></td></tr></table></figure>
+<p>我们执行下，结果如下：<br><img src="/2017/07/27/Block的使用注意事项/weak-strong dance2.png" alt="image"><br>纳尼？逗我玩儿? <code>strongSelf</code> 居然为nil，是滴，这就是我们要说的上述可能会存在的问题。所以需要继续改造才可以，代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">self.block = ^&#123;</div><div class="line">        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;</div><div class="line">         __strong typeof(self) strongSelf = weakSelf;</div><div class="line">         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;</div><div class="line">             if(strongSelf) &#123;</div><div class="line">                 strongSelf.logBlock();</div><div class="line">             &#125; else &#123;</div><div class="line">                 NSLog(@&quot;strongSelf = nil!!!&quot;);</div><div class="line">             &#125;</div><div class="line">         &#125;);</div><div class="line">     &#125;);</div><div class="line"> &#125;;</div></pre></td></tr></table></figure>
+<p>这样就可以解决闪退问题，因为可能<code>strongSelf</code>为nil, 所以需要判断即可。这样才算真正的解决Block的问题。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/14/App卡顿监测/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1685,155 +1854,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/28/Python爬虫利器之使用BeautifulSoup抓取所需内容(一)/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Bill">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/images/avatar/avatar/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="李超的技术博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/05/28/Python爬虫利器之使用BeautifulSoup抓取所需内容(一)/" itemprop="url">
-                  Python爬虫利器之使用BeautifulSoup抓取所需内容(一)
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-28T17:09:04+08:00">
-                2017-05-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python爬虫/" itemprop="url" rel="index">
-                    <span itemprop="name">Python爬虫</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>Python爬虫利器之使用BeautifulSoup抓取所需内容(一)</strong></p>
-<p>最近由于兴趣使然，对于Python爬虫产生了兴趣，所以平时生活中会抽出功夫学习爬虫，文章是自己的爬虫基础实例，以后博客不仅会有iOS的内容，也会Python爬虫，记录自己的代码生涯。</p>
-<p>以糗事百科为例来说明，<a href="http://www.qiushibaike.com/text/" target="_blank">http://www.qiushibaike.com/text/</a>，抓取原创笑话段子。</p>
-<p><img src="/2017/05/28/Python爬虫利器之使用BeautifulSoup抓取所需内容(一)/Users/lichao/Desktop/blog/source/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容/(一\" alt="image">.png)</p>
-<!--![image](/uploads/Python爬虫利器之使用BeautifulSoup抓取所需内容\(一\).png)-->
-<p>发现内容都在span标签中，如果写 find_all(“span”) 可以抓取到段子的内容，但是还包含了网页上其他span的内容。这时我们往上一级标签上看，&lt;div class=”content&gt; 就是只包含了段子内容的标签。取出来的link的内容就是div，取它的span中的内容就是我们需要段子的内容。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">import requests</div><div class="line"></div><div class="line">from bs4 import BeautifulSoup</div><div class="line"></div><div class="line">html = requests.get(&apos;http://www.qiushibaike.com/text/&apos;).content</div><div class="line"></div><div class="line">soup = BeautifulSoup(html,&apos;lxml&apos;)</div><div class="line">links = soup.find_all(&apos;div&apos;,class_=&apos;content&apos;)</div><div class="line"></div><div class="line">for link in links:</div><div class="line">	print(link.span.get_text())</div></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1883,7 +1903,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">14</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
