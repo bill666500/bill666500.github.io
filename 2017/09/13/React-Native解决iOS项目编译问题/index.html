@@ -87,22 +87,29 @@
 
 
 
-<meta name="description" content="本次笔记比上次更有难度，因为涉及到汇编的只是，由于汇编涉及的比较底层，而且自己对于汇编有很多还不了解，所以在写完此次课程开始恶补汇编知识，以此来深入理解本书的内容，而且后期的汇编器也深入讨论汇编知识，所以就此通过这次机会学习一下汇编来补习知识。
-  我们写一个最简单的“HelloWorld”程序，代码存储在源文件hello.c中，源文件内容如下：
- 123456#include&amp;lt;stdi">
+<meta name="description" content="React-Native解决iOS项目编译问题
+
+在平时做项目中，我们很可能通过pod方式引入React Native，看网上资料大多数还是解决不了0.46以上的问题，目前个人用的是0.47.1版本，大多数网上资料针对最新版已经不适用了，大多数类似在podfile文件添加：
+1234567891011pod &amp;apos;React&amp;apos;, :path =&amp;gt; &amp;apos;./Test/n">
 <meta property="og:type" content="article">
-<meta property="og:title" content="自己动手构造编译系统：编译、汇编与链接笔记2">
-<meta property="og:url" content="http://yoursite.com/2017/06/07/自己动手构造编译系统：编译、汇编与链接笔记2/index.html">
+<meta property="og:title" content="React-Native解决iOS项目编译问题">
+<meta property="og:url" content="http://yoursite.com/2017/09/13/React-Native解决iOS项目编译问题/index.html">
 <meta property="og:site_name" content="李超的技术博客">
-<meta property="og:description" content="本次笔记比上次更有难度，因为涉及到汇编的只是，由于汇编涉及的比较底层，而且自己对于汇编有很多还不了解，所以在写完此次课程开始恶补汇编知识，以此来深入理解本书的内容，而且后期的汇编器也深入讨论汇编知识，所以就此通过这次机会学习一下汇编来补习知识。
-  我们写一个最简单的“HelloWorld”程序，代码存储在源文件hello.c中，源文件内容如下：
- 123456#include&amp;lt;stdi">
-<meta property="og:updated_time" content="2017-06-12T13:32:27.000Z">
+<meta property="og:description" content="React-Native解决iOS项目编译问题
+
+在平时做项目中，我们很可能通过pod方式引入React Native，看网上资料大多数还是解决不了0.46以上的问题，目前个人用的是0.47.1版本，大多数网上资料针对最新版已经不适用了，大多数类似在podfile文件添加：
+1234567891011pod &amp;apos;React&amp;apos;, :path =&amp;gt; &amp;apos;./Test/n">
+<meta property="og:image" content="http://yoursite.com/2017/09/13/React-Native解决iOS项目编译问题/1.JPG">
+<meta property="og:image" content="http://yoursite.com/2017/09/13/React-Native解决iOS项目编译问题/2.png">
+<meta property="og:image" content="http://yoursite.com/2017/09/13/React-Native解决iOS项目编译问题/3.png">
+<meta property="og:updated_time" content="2017-09-13T04:13:04.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="自己动手构造编译系统：编译、汇编与链接笔记2">
-<meta name="twitter:description" content="本次笔记比上次更有难度，因为涉及到汇编的只是，由于汇编涉及的比较底层，而且自己对于汇编有很多还不了解，所以在写完此次课程开始恶补汇编知识，以此来深入理解本书的内容，而且后期的汇编器也深入讨论汇编知识，所以就此通过这次机会学习一下汇编来补习知识。
-  我们写一个最简单的“HelloWorld”程序，代码存储在源文件hello.c中，源文件内容如下：
- 123456#include&amp;lt;stdi">
+<meta name="twitter:title" content="React-Native解决iOS项目编译问题">
+<meta name="twitter:description" content="React-Native解决iOS项目编译问题
+
+在平时做项目中，我们很可能通过pod方式引入React Native，看网上资料大多数还是解决不了0.46以上的问题，目前个人用的是0.47.1版本，大多数网上资料针对最新版已经不适用了，大多数类似在podfile文件添加：
+1234567891011pod &amp;apos;React&amp;apos;, :path =&amp;gt; &amp;apos;./Test/n">
+<meta name="twitter:image" content="http://yoursite.com/2017/09/13/React-Native解决iOS项目编译问题/1.JPG">
 
 
 
@@ -130,13 +137,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/06/07/自己动手构造编译系统：编译、汇编与链接笔记2/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/09/13/React-Native解决iOS项目编译问题/"/>
 
 
 
 
 
-  <title> 自己动手构造编译系统：编译、汇编与链接笔记2 | 李超的技术博客 </title>
+  <title> React-Native解决iOS项目编译问题 | 李超的技术博客 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -265,7 +272,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/07/自己动手构造编译系统：编译、汇编与链接笔记2/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/13/React-Native解决iOS项目编译问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Bill">
@@ -286,7 +293,7 @@
             
             
               
-                自己动手构造编译系统：编译、汇编与链接笔记2
+                React-Native解决iOS项目编译问题
               
             
           </h1>
@@ -301,8 +308,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-07T17:54:43+08:00">
-                2017-06-07
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-13T11:31:18+08:00">
+                2017-09-13
               </time>
             
 
@@ -324,8 +331,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/计算机原理/" itemprop="url" rel="index">
-                    <span itemprop="name">计算机原理</span>
+                  <a href="/categories/iOS深入浅出/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS深入浅出</span>
                   </a>
                 </span>
 
@@ -364,37 +371,18 @@
       
 
       
-        <p>  本次笔记比上次更有难度，因为涉及到汇编的只是，由于汇编涉及的比较底层，而且自己对于汇编有很多还不了解，所以在写完此次课程开始恶补汇编知识，以此来深入理解本书的内容，而且后期的汇编器也深入讨论汇编知识，所以就此通过这次机会学习一下汇编来补习知识。</p>
-<p>  我们写一个最简单的“HelloWorld”程序，代码存储在源文件hello.c中，源文件内容如下：</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">#include&lt;stdio.h&gt;</div><div class="line">int main()</div><div class="line">&#123;    </div><div class="line"> printf(&quot;Hello World!&quot;);   </div><div class="line"> return 0;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p> 如果将hello.c编译并静态链接为可执行文件，查看GCC背后的工作流程，可以使用–verbose选项如下(主意针对Mac 命令会有所不同 查看)：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$gcc hello.c –o hello -S --verbose</div></pre></td></tr></table></figure></p>
-<p>  通过文件夹目录可以看出多出两个文件 main.s汇编文件和main可执行文件。可以看出，GCC编译背后使用了cc1、as、collect2三个命令。其中cc1是GCC的编译器，它将源文件hello.c编译为hello.s。as是汇编器命令，它将hello.s汇编为hello.o目标文件。collect2是链接器命令，它是对命令ld的封装。静态链接时，GCC将C语言运行时库（CRT）内的5个重要的目标文件crt1.o、crti.o、crtbe-ginT.o、crtend.o、crtn.o以及3个静态库libgcc.a、libgcc_eh.a、libc.a链接到可执行文件hello。此外，cc1在对源文件编译之前，还有预编译的过程。</p>
-<h4>1.预编译</h4>
+        <h1>React-Native解决iOS项目编译问题</h1>
 
-<p>  GCC对源文件的第一阶段的处理是预编译，主要是处理宏定义和文件包含等信息。命令格式如下：</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gcc -E main.c -o main.i</div></pre></td></tr></table></figure>
-<p>  预编译器将hello.c处理后输出到文件hello.i。比如文件包含语句#include<stdio.h>，预编译器会将stdio.h的文件内容拷贝到#include语句声明的位置。如果源文件内使用#define语句定义了宏，预编译器则将该宏的内容替换到其被引用的位置。如果宏定义本身使用了其他宏，则预编译器需要将宏递归地展开。</stdio.h></p>
-<p>  我们可以将预编译的工作简单地理解为源码的文本替换，即将宏定义的内容替换到宏的引用位置。当然，这样理解有一定的片面性，因为要考虑宏定义中使用其他宏的情况。事实上预编译器的实现机制和编译器有着很大的相似性，因此本书描述的编译系统将重点放在源代码的编译上，不再独立实现预编译器。然而，我们需要清楚的事实是：一个完善的编译器是需要预编译器的。</p>
-<h4>2.编译</h4>
-
-<p>  接下来GCC对hello.i进行编译，命令如下：</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$gcc –S hello.i –o</div></pre></td></tr></table></figure>
-<p>  hello.s编译后产生的汇编文件hello.s</p>
-<h4>3.汇编</h4>
-
-<p>  接着，GCC使用汇编器对hello.s进行汇编，命令如下：</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$gcc –c hello.s –o hello.o</div></pre></td></tr></table></figure>
-<p>  生成的目标文件hello.o，Linux下称之为可重定位目标文件。目标文件无法使用文本编辑器直接查看，但是我们可以使用GCC自带的工具objdump命令分析它的内容，命令格式如下：</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$objdump –sd hello.o</div></pre></td></tr></table></figure>
-<p>  从数据段二进制信息的ASCII形式的显示中，我们看到了汇编语言内定义的字符串数据“Hello World！”。代码段的信息和汇编文件代码信息基本吻合，但是我们发现了很多不同之处。比如汇编文件内的指令“movl$.LC0，%eax”中的符号.LC0的地址（字符串“Hello World！”的地址）被换成了0。指令“callprintf”内符号printf的相对地址被换成了0xfffffffc，即call指令操作数部分的起始地址。这些区别本质来源于汇编语言符号的引用问题。由于汇编器在处理当前文件的过程中无法获悉符号的虚拟地址，因此临时将这些符号地址设置为默认值0，真正的符号地址只有在链接的时候才能确定。</p>
-<h4>4.链接</h4>
-
-<p>使用GCC命令进行目标文件链接很简单：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gcc hello.o –o hello</div></pre></td></tr></table></figure>
-<p>GCC默认使用动态链接，如果要进行静态链接，需加上-static选项：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gcc hello.o –o hello –static</div></pre></td></tr></table></figure>
-<p>这样生成的可执行文件hello便能正常执行了。我们使用objdump命令查看一下静态链接后的可执行文件内的信息。由于可执行文件中包含了大量的C语言库文件，因此这里不便将文件的所有信息展示出来，仅显示最终main函数的可执行代码。</p>
-<p>从main函数的可执行代码中，我们发现汇编过程中描述的无法确定的符号地址信息在这里都被修正为实际的符号地址。如“Hello World！”字符串的地址为0x080ae828，printf函数的地址为0x08048dd0。这里符号_IO_printf与printf完全等价，call指令内部相对地址为0x000afa，正好是printf地址相对于call指令下条指令起始地址0x080482d6的偏移。</p>
+<p>在平时做项目中，我们很可能通过pod方式引入React Native，看网上资料大多数还是解决不了0.46以上的问题，目前个人用的是0.47.1版本，大多数网上资料针对最新版已经不适用了，大多数类似在podfile文件添加：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">pod &apos;React&apos;, :path =&gt; &apos;./Test/node_modules/react-native&apos;, :subspecs =&gt; [</div><div class="line">  &apos;Core&apos;,</div><div class="line">  &apos;RCTText&apos;,</div><div class="line">  &apos;RCTImage&apos;,</div><div class="line">  &apos;RCTActionSheet&apos;,</div><div class="line">  &apos;RCTGeolocation&apos;,</div><div class="line">  &apos;RCTNetwork&apos;,</div><div class="line">  &apos;RCTSettings&apos;,</div><div class="line">  &apos;RCTVibration&apos;,</div><div class="line">  &apos;RCTWebSocket&apos;,</div><div class="line">  ]</div></pre></td></tr></table></figure>
+<p>可是始终编译不通过，<br><img src="/2017/09/13/React-Native解决iOS项目编译问题/1.JPG" alt="image"></p>
+<p>纳尼，难道我自己安装的环境不行，结果不得不去谷歌一下，但是第一个我搜了没有相应想要的信息，好吧，我从最后面那条信息入手<code>_JSNoBytecodeFileFormatVersion,referenced from:</code>很快就找到答案</p>
+<p><img src="/2017/09/13/React-Native解决iOS项目编译问题/2.png" alt="image"></p>
+<p><a href="https://github.com/facebook/react-native/issues/14749" target="_blank" rel="external">在此链接</a>我们找到了想要的答案</p>
+<p><img src="/2017/09/13/React-Native解决iOS项目编译问题/3.png" alt="image"></p>
+<p>最终要在podfile文件添加：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">pod &apos;React&apos;, :path =&gt; &apos;./Test/node_modules/react-native&apos;, :subspecs =&gt; [</div><div class="line">  &apos;Core&apos;,</div><div class="line">  &apos;RCTText&apos;,</div><div class="line">  &apos;RCTImage&apos;,</div><div class="line">  &apos;RCTActionSheet&apos;,</div><div class="line">  &apos;RCTGeolocation&apos;,</div><div class="line">  &apos;RCTNetwork&apos;,</div><div class="line">  &apos;RCTSettings&apos;,</div><div class="line">  &apos;RCTVibration&apos;,</div><div class="line">  &apos;RCTWebSocket&apos;,</div><div class="line">  &apos;BatchedBridge&apos;</div><div class="line">  ]</div></pre></td></tr></table></figure>
+<p>这样就可以完美解决0.46以上版本编译不通过的问题。下回有时间介绍下在项目中针对RN遇到的一些麻烦问题。</p>
 
       
     </div>
@@ -431,8 +419,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/06/04/Python爬虫写入CSV/" rel="next" title="Python爬虫写入CSV">
-                <i class="fa fa-chevron-left"></i> Python爬虫写入CSV
+              <a href="/2017/09/06/React-Native-之新手入门进阶一/" rel="next" title="React Native 之新手入门进阶一">
+                <i class="fa fa-chevron-left"></i> React Native 之新手入门进阶一
               </a>
             
           </div>
@@ -440,10 +428,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/06/11/信号量dispatch-semaphore的理解及实际运用/" rel="prev" title="信号量dispatch_semaphore的理解及实际运用">
-                信号量dispatch_semaphore的理解及实际运用 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -563,7 +547,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">1.预编译</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">2.编译</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">3.汇编</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text">4.链接</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">React-Native解决iOS项目编译问题</span></a></li></ol></div>
             
 
           </div>
